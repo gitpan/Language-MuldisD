@@ -1,0 +1,217 @@
+                             Language::MuldisD
+---------------------------------------------------------------------------
+
+2007-07-24   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Language::MuldisD version 0.3.0 is released on CPAN as
+    Language-MuldisD-0.3.0.tar.gz.
+
+    * What was Muldis-DB at version 0.2.0 and earlier, has been split in 2,
+    with the parts to be Language-MuldisD and Muldis-DB, each at version
+    0.3.0 and later.  Prior to the split, both the Perl 5 and Perl 6
+    versions of Muldis-DB contained identical copies of what became
+    Language-MuldisD; after the split, neither Muldis-D had a copy.
+
+    * All versioned files had their version numbers brought up to 0.3.0.
+
+    * This is the first release of the Language-MuldisD distribution, and
+    the first release of any distribution to contain Perl 5 modules named
+    Language::MuldisD::\w+.
+
+    * The file lib/Language/MuldisD.pod is cloned from part of what used to
+    be lib/Muldis/DB.pm, and the file lib/Language/MuldisD/SeeAlso.pod is
+    cloned from part of what used to be lib/Muldis/DB/SeeAlso.pod, and
+    lib/Language/MuldisD/Language.pod was renamed from
+    lib/Muldis/DB/Language.pod, and all other lib/Language/MuldisD/\w+ were
+    renamed from lib/Muldis/DB/Language/\w+.
+
+    * Updated Grammar.pod concerning '(Int|Blob):x:y' so that the 'x' is
+    now a single character in the same base as the 'y', rather than being a
+    possibly multi-character integer in base-10; moreover, the 'x' is now
+    equal to the highest value that a character may represent, which in the
+    base in question is 1 less than the base number.  So eg, base-2 is now
+    specified with an 'x' value of '1', base-10 is a '9', base-16 an 'F',
+    etc.  Also, the 'y' part for Int|Blob is no longer quote-delimited.
+
+    * This is the Language-MuldisD-0.3.0 file manifest:
+
+        Changes
+        INSTALL
+        lib/Language/MuldisD.pod
+        lib/Language/MuldisD/Catalog.pod
+        lib/Language/MuldisD/Core.pod
+        lib/Language/MuldisD/Ext/Num.pod
+        lib/Language/MuldisD/Ext/Spatial.pod
+        lib/Language/MuldisD/Ext/Temporal.pod
+        lib/Language/MuldisD/Grammar.pod
+        lib/Language/MuldisD/Language.pod
+        lib/Language/MuldisD/SeeAlso.pod
+        LICENSE/GPL
+        Makefile.PL
+        MANIFEST			This list of files
+        MANIFEST.SKIP
+        META.yml
+        README
+        t/LMD_00_Compile.t
+        TODO
+
+2007-07-22   Darren Duncan <perl@DarrenDuncan.net>
+
+    The next version of the Module List will list the following module:
+
+      modid:       Language::MuldisD
+      DSLIP:       cmong
+      description: Formal spec of Muldis D relational DBMS lang
+      userid:      DUNCAND (Darren Duncan)
+      chapterid:   7 (Database_Interfaces)
+      enteredby:   ADAMK (Adam Kennedy)
+      enteredon:   Mon Jul 23 04:56:26 2007 GMT
+
+    The resulting entry will be:
+
+    Language::
+    ::MuldisD    cmong Formal spec of Muldis D relational DBMS lang DUNCAND
+
+2007-07-20   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Muldis::DB version 0.2.0 for Perl 5 is released on CPAN as
+    Muldis-DB-0.2.0.tar.gz.  The rest of this Changes entry refers only to
+    the portions of it that became part of the Language-MuldisD
+    distribution following release 0.2.0.
+
+    * New file versions are: DB.pod and Language.pod and Core.pod and
+    Catalog.pod and Grammar.pod and SeeAlso.pod 0.2.0.  Unchanged file
+    versions are: Num.pod and Temporal.pod and Spatial.pod 0.1.0.
+
+    * Updated the TRANSACTIONS AND CONCURRENCY section of Language.pod in
+    regards to how the scope of explicit transactions is specified, and
+    where implicit transactions occur.  Also, Muldis D now no longer has
+    language for non-scope-attached transactions, and any concept of
+    distinct transaction initiation or termination statements will be
+    hoisted to the host language (presumably as methods of ::DBMS objects).
+
+    * Updated Core.pod to add the scalar type 'PInt2_36', and to replace
+    the pseudo-type 'Any' with the pseudo-type 'Some.Universal', and added
+    'Some.Ordinal'.
+
+    * Updated Grammar.pod concerning integer literals; they can be
+    represented with any of base-2 thru base-36 now.
+
+    * Updated Grammar.pod and Core.pod concerning enumerated types, such as
+    Bool and Order; individual values are now specified using eg
+    [Bool:true] rather than [Bool.True], which then makes them more like
+    literals of other simple types, and less like data type names.
+
+    * Updated Core.pod to add definitions for the generic operators common
+    to all ordinal types: compare, reverse_compare, is_increase,
+    is_decrease, min, max.  Added 'reverse' operator for the Order type.
+    Added or replaced a bunch of operators for the Int|Blob|Text types.
+    Other small changes.
+
+    * Updated Core.pod to add an initial complement of common tuple and
+    relation operators (such as project, join, union), perhaps most of
+    them.  These are a large part of what makes Muldis D a relational
+    language at all.
+
+    * Updated Catalog.pod to add new core data types: Cat.ShortNameSet,
+    Cat.AttrRenameMap.
+
+2007-07-11   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Muldis::DB version 0.1.0 for Perl 5 is released on CPAN as
+    Muldis-DB-0.1.0.tar.gz.  The rest of this Changes entry refers only to
+    the portions of it that became part of the Language-MuldisD
+    distribution following release 0.2.0.
+
+    * This is a major release that focuses on overhauling or defining part
+    of the Muldis D meta-model / system catalog, which is essential for
+    supporting any user-defined DBMS entities, that is, for doing anything
+    remotely useful.  Said overhaul is expected to be staged over 3-4
+    consecutive releases, of which the current one is essentially just
+    updating documentation; not much code was changed by this release.
+
+    * As of this release, all pod-only files now also have version numbers,
+    shown in the VERSION docs by NAME, like code-containing modules do; the
+    initial version numbers are all 0.1.0.
+
+    * Muldis D now has 2 representation formats (Concrete Muldis D,
+    Abstract Muldis D) rather than 3 (relations, ASTs, strings).
+
+    * Rearranged any relevant docs so that the most important core scalar
+    types are now in the order [Bool, Int, Blob, Text] and the relation
+    type factory Maybe now appears after Set.
+
+    * Muldis D now has a new scalar data type, "Order", which is an
+    enumeration (like "Bool" is) of 3 values: [Increase, Same, Decrease];
+    it is the result type of any binary comparison operator that underlies
+    the likes of less|greater-than or min|max or sorting operations.
+
+    * Muldis D now has the new scalar types "Cat.ShortName" and
+    "Cat.LongName", which replace the also removed "Cat.EntityName" and its
+    (as yet unused) system-defined subtypes.
+
+    * Split up Language.pod 6 ways, into itself and
+    Language/(Core|Catalog).pod and
+    Language/Ext/(Num|Temporal|Spatial).pod.  For the most part, the only
+    initial content of the 5 new files are corresponding portions of what
+    used to be the SYSTEM-DEFINED DATA TYPES and (actually empty)
+    SYSTEM-DEFINED ROUTINES main documentation sections of Language.pod,
+    but that the CATALOGS main section was also moved to Catalog.pod;
+    Language.pod retained all the other documentation sections that it
+    previously had.  (Language.pod retained about 75% of its previous
+    content; about 25% was moved out.)
+
+    * Further updated the 5 language files with type definitions, to update
+    some definitions, and also to add a small TYPE SUMMARY main doc section
+    to each file.
+
+    * Updated Core.pod to add several main doc sections that have an
+    initial complement of system-defined routines.  In particular, the
+    equal|not_equal|assign routines that all types have are now defined,
+    and all the common boolean and integer operators were added, and some
+    converter routines such as int-from-text et al, were all added.  Many
+    other operator definitions are pending, especially the relational ones.
+
+    * Added new file lib/Muldis/DB/Language/Grammar.pod, which describes
+    Concrete Muldis D details that aren't applicable to Abstract Muldis D.
+
+2007-06-29   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Muldis::DB version 0.0.1 for Perl 5 is released on CPAN as
+    Muldis-DB-0.0.1.tar.gz.  The rest of this Changes entry refers only to
+    the portions of it that became part of the Language-MuldisD
+    distribution following release 0.2.0.
+
+    * New file versions (not marked though) are: Language.pod 0.0.1.
+
+    * The primary purpose of this release is to re-license the Muldis D
+    specification under actual free software licenses, specifically version
+    3 of the GPL family of licenses, which the Free Software Foundation
+    formally published on 2007 June 29th.  By contrast, the previous Muldis
+    D releases were under an expiring proprietary license, with just the
+    promise of a free re-license to come.  Accordingly, the file
+    LICENSE/GPL was added to this distro, which contains the text of the
+    GPL version 3.0.
+
+    * This release also includes a collection of small documentation
+    updates and fixes, such as the following:  We now use the official
+    typography for the names 'TTM' and 'D' and such.  Added a DOCUMENTATION
+    READING ORDER section to the README file.
+
+2007-06-20   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Muldis::DB version 0.0.0 for Perl 5 is released on CPAN as
+    Muldis-DB-0.0.0.tar.gz.  The rest of this Changes entry refers only to
+    the portions of it that became part of the Language-MuldisD
+    distribution following release 0.2.0.
+
+    * Initial file versions (not marked though) are: Language.pod 0.0.0.
+
+    * As of this release, the Muldis D specification is officially in
+    pre-alpha development status.  A lot of documentation is present, but a
+    lot isn't.  What is mostly done is the higher level documentation.
+    What is mostly undone is documentation of the API details.  What is
+    already present should be sufficient to begin study of Muldis D such
+    that it can actually be put to use within the next few weeks or months
+    as Muldis D is fleshed out.  Also, it should be possible now to start
+    writing code that implements it or uses said.

@@ -1,0 +1,19 @@
+Changes
+INSTALL
+lib/Language/MuldisD.pod
+lib/Language/MuldisD/Catalog.pod
+lib/Language/MuldisD/Core.pod
+lib/Language/MuldisD/Ext/Num.pod
+lib/Language/MuldisD/Ext/Spatial.pod
+lib/Language/MuldisD/Ext/Temporal.pod
+lib/Language/MuldisD/Grammar.pod
+lib/Language/MuldisD/Language.pod
+lib/Language/MuldisD/SeeAlso.pod
+LICENSE/GPL
+Makefile.PL
+MANIFEST			This list of files
+MANIFEST.SKIP
+META.yml
+README
+t/LMD_00_Compile.t
+TODO

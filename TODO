@@ -1,0 +1,27 @@
+                             Language::MuldisD
+---------------------------------------------------------------------------
+
+Following is a summary of things that still need doing.  It is specific to
+the Muldis D specification distribution only, and doesn't talk about things
+that would go in other distributions, including implementations.  (But,
+look at lib/Language/MuldisD/SeeAlso.pod for a list of actual or possible
+implementations.)
+
+The following list is loosely ordered by priority, but list items may
+actually be addressed in a different order.  There is no specific time
+table for these items; they are simply to be done "as soon as possible".
+
+* Generally speaking, make a new release to CPAN once every week, assuming
+the progress is non-trivial, so there are regular public snapshots with
+nicely rendered documentation.
+
+* Flesh out the specs for the Muldis D metamodel, that is, the catalog.
+This is the main prerequisite for doing anything moderately more complex
+than what has already been done, including the support for user-defined
+data types, stored routines, constraints, virtual variables, and persisting
+databases.
+
+* Flesh out the list of system-defined operators, including type selectors,
+that Muldis D includes.
+
+* Whatever else needs doing, such as, fixing bugs.
