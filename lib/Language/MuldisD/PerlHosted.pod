@@ -1,0 +1,657 @@
+=pod
+
+=encoding utf8
+
+=head1 NAME
+
+Language::MuldisD::PerlHosted -
+How to format Perl hosted Abstract Muldis D
+
+=head1 VERSION
+
+This document is Language::MuldisD::PerlHosted version 0.0.0.
+
+=head1 PREFACE
+
+This document is part of the Muldis D language specification, whose root
+document is L<Language::MuldisD>; you should read that root document
+before you read this one, which provides subservient details.
+
+=head1 DESCRIPTION
+
+This document outlines the specification of I<Abstract Muldis D> as hosted
+in either Perl 5 or Perl 6, and as composed of just|mainly core Perl types;
+for brevity, the term I<PHMD> will be used to refer to this spec.
+
+Where Perl 5 and 6 differ, the terminology and examples in this
+documentation specifically uses Perl 6 terminology and examples by default,
+and adds analogous Perl 5 terminology as necessary.
+
+Fundamentally, the various Muldis D scalar and collection types are
+represented by their equivalent Perl 5 or 6 native scalar and collection
+types.  But since Muldis D is more strongly typed, or at least differently
+typed, than Perl, each Muldis D literal is represented by a Perl Array,
+whose elements include both the payload Perl literal plus explicit
+meta-data for how to interpret that Perl literal for mapping to Muldis D.
+
+This document mainly just specifies a way to represent Muldis D values as
+Perl values.  Since the fundamental way to do data definition in Muldis D
+is to update catalog (information schema) variables, aka the Muldis D
+meta-model, which are themselves just data, then this document only needs
+to tell you how to define values to put in the catalog variables.  Defining
+data types or routines are done by defining catalog values describing them.
+
+See instead L<Language::MuldisD::Catalog> for how to actually define the
+tuples and relations that define your data types and routines and queries
+and so forth, or see L<Language::MuldisD::Core> before that.
+
+Note that this document (along with the aforementioned) is also intended to
+serve as a proposal for a generic portable AST that various Perl
+applications and components can use to represent their database schemas and
+queries, regardless of whether a native Muldis D implementation is in use;
+or this document can be used as a point of departure for documenting some
+alternative AST for that purpose.
+
+I<This documentation is pending.>
+
+=head1 GENERAL STRUCTURE
+
+A PHMD value is composed mainly of a tree of Perl Array, such that each
+Array is a tree node.  The elements of each node/Array include typically a
+native Perl payload value, which may be a PHMD value itself, plus meta-data
+for that payload, that meta-data typically including the analogy of a class
+name, were PHMD nodes instead represented by a tree of PHMD-specific
+objects.
+
+It should be emphasized that no Perl undefined values are allowed anywhere
+in a PHMD value; you must use only defined values instead.  This
+documentation also assumes that only defined values are used, and that
+supplying a Perl undef will result in an error.  If you genuinely want to
+represent that a value is unknown, then the C<Maybe> node type is provided
+as one way you can explicitly say so.  I<This policy may be reconsidered.>
+
+The root Perl C<Array> of a PHMD value has 3 elements, which are:
+
+=over
+
+=item The AST language/schema name, specifically the Perl C<Str> value
+C<MuldisD> for this spec.
+
+=item The AST language/schema version plus authority, encoded either as a
+single Perl C<Str> value, or as a Perl C<Array> value containing separate
+values for the language version and authority.
+
+=item The payload is any other PHMD node.
+
+=back
+
+Examples of a root node:
+
+    [ 'MuldisD', [ '1.2.3', 'cpan:DUNCAND' ],
+        [ 'Bool', 'md_enum', 'false' ] ]
+
+    [ 'MuldisD', ':ver<1.2.3>:auth<cpan:DUNCAND>',
+        [ 'Bool', 'md_enum', 'false' ] ]
+
+Both the payload node under the root node and every other node is a Perl
+C<Array> with usually 2+ elements, where the first element is a Perl C<Str>
+saying what kind of node it is, and the last element is the
+typically-single payload, and any sometimes-optional intermediate elements
+give extra meta-data to specify which of possibly several representation
+formats the payload is, so that it is correctly interpreted.  Typically
+speaking, only the payload element is a Perl collection type, and typically
+all the other elements are Perl scalars.
+
+=head1 SCALAR VALUES
+
+=head2 sys.type.Bool
+
+This node type represents a logical boolean value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Bool>.
+
+=item Format; one of: C<md_enum>, C<perl_bool>, C<any_perl>.
+
+=item The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Bool> value as follows:
+
+=over
+
+=item If the format is C<md_enum>, then the payload must be a Perl C<Str>
+having one of the values C<false>, C<true>.  This format specifically is
+what the Concrete Muldis D grammar uses, and is the result of parsing it.
+
+=item If the format is C<perl_bool>, then:  Under Perl 6, the payload must
+be a Perl C<Bool>, and so C<Bool::False> and C<Bool::True> are mapped
+directly.  Under Perl 5, the payload must be just the specific result of a
+Perl 5 logical expression, such as C<(1 == 0)> or C<(1 == 1)>, and nothing
+else; said values are probably the empty string and number 1, respectively.
+
+=item If the format is C<any_perl>, then the payload may be any Perl value,
+and it is simply coerced into a boolean context as per Perl's own
+semantics; typically for built-in scalars, the empty string and number zero
+are considered false, and everything else true.
+
+=back
+
+Examples:
+
+    [ 'Bool', 'md_enum', 'true' ]
+
+    [ 'Bool', 'perl_bool', Bool::False ] # Perl 6 only
+
+    [ 'Bool', 'perl_bool', (1 == 0) ]
+
+    [ 'Bool', 'perl_any', 42 ]
+
+=head2 sys.type.Order
+
+This node type represents an order-determination.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Order>.
+
+=item Format; one of: C<md_enum>, C<perl_order>.
+
+=item The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Order> value as follows:
+
+=over
+
+=item If the format is C<md_enum>, then the payload must be a Perl C<Str>
+having one of the values C<increase>, C<same>, C<decrease>.  This format
+specifically is what the Concrete Muldis D grammar uses, and is the result
+of parsing it.
+
+=item If the format is C<perl_order>, then:  Under Perl 6, the payload must
+be a Perl C<Order>, and so C<Order::Increase> and C<Order::Same> and
+C<Order::Decrease> are mapped directly.  Under Perl 5, the payload must be
+just the specific result of a Perl 5 order-determining expression, such as
+C<<(1 <=> 2)>> or C<<(1 <=> 1)>> or C<<(2 <=> 1)>>, and nothing else; said
+values are probably the numbers [-1, 0, 1], respectively.
+
+=back
+
+Examples:
+
+    [ 'Order', 'md_enum', 'same' ]
+
+    [ 'Order', 'perl_order', Order::Increase ] # Perl 6 only
+
+    [ 'Order', 'perl_order', (2 <=> 1) ]
+
+=head2 sys.type.Int
+
+This node type represents an integer value.  It has 3-4 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Int>.
+
+=item Format; one of: C<md_int>, C<perl_int>, C<any_perl>.
+
+=item Only when format is C<md_int>; the max-col-val.
+
+=item The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Int> value as follows:
+
+=over
+
+=item If the format is C<md_int>, then the max-col-val must be a Perl
+C<Str> composed of a single C<[1-9A-Z]> character, and the payload must be
+a Perl C<Str> of the format C<0> or C<< \-?<[1-9A-Z]><[0-9A-Z]>* >>.  This
+format specifically is what the Concrete Muldis D grammar uses, and is the
+result of parsing it.  The payload is interpreted as a base-I<N> integer
+where I<N> might be between 2 and 36, and the given max-col-val says which
+possible value of I<N> to use.  Assuming all column values are between zero
+and I<N>-minus-one, the max-col-val contains that I<N>-minus-one.  So to
+specify, eg, bases [2,8,10,16], use max-col-val of [1,7,9,F].
+
+=item If the format is C<perl_int>, then:  Under Perl 6, the payload must
+be a Perl C<Int>, which is mapped directly.  Under Perl 5, the payload must
+be just a canonical integer value according to Perl.
+
+=item If the format is C<any_perl>, then the payload may be any Perl value,
+and it is simply coerced into an integer context as per Perl's own
+semantics, meaning base-10 where applicable.  If something doesn't look
+numeric, it becomes zero; if something looks like a fractional number, it
+is truncated.
+
+=back
+
+Examples:
+
+    [ 'Int', 'md_int', '1', '11001001' ] # binary
+
+    [ 'Int', 'md_int', '7', '0' ] # octal
+
+    [ 'Int', 'md_int', '7', '644' ] # octal
+
+    [ 'Int', 'md_int', '9', '-34' ] # decimal
+
+    [ 'Int', 'md_int', '9', '42' ] # decimal
+
+    [ 'Int', 'md_int', 'F', 'DEADBEEF' ] # hexadecimal
+
+    [ 'Int', 'md_int', 'Z', '-HELLOWORLD' ] # base-36
+
+    [ 'Int', 'perl_int', 21 ]
+
+    [ 'Int', 'any_perl', ' 171 ' ]
+
+=head2 sys.type.UInt
+
+This node type represents an unsigned / non-negative integer value; it is
+interpreted as a Muldis D C<sys.type.UInt>.  Its format is the same as for
+C<sys.type.Int> but that the node type is 'UInt', its formats are
+respectively named for 'uint', and the payload may not have a leading C<->.
+
+Examples:
+
+    [ 'UInt', 'md_uint', '3', '301' ] # base-4
+
+    [ 'UInt', 'perl_uint', 0 ]
+
+=head2 sys.type.PInt
+
+This node type represents a positive integer value; it is interpreted as a
+Muldis D C<sys.type.PInt>.  Its format is the same as for C<sys.type.UInt>
+but that the node type is 'PInt', formats 'pint', and the payload may not
+be C<0>.
+
+Examples:
+
+    [ 'PInt', 'md_pint', 'B', 'A09B' ] # base-12
+
+    [ 'PInt', 'perl_pint', 101 ]
+
+=head2 sys.type.Blob
+
+This node type represents a bit string.  It has 3-4 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Blob>.
+
+=item Format; one of: C<md_blob>, C<perl_blob>.
+
+=item Only when format is C<md_blob>; the max-col-val.
+
+=item The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Blob> value as follows:
+
+=over
+
+=item If the format is C<md_blob>, then the max-col-val must be a Perl
+C<Str> composed of a single C<[137F]> character, and the payload must be a
+Perl C<Str> of the format C<< <[0-9A-F]>* >>.  This format specifically is
+what the Concrete Muldis D grammar uses, and is the result of parsing it.
+Each column of the payload specifies a sequence of one of [1,2,3,4] bits,
+depending on whether max-col-val is [1,3,7,F].
+
+=item If the format is C<perl_blob>, then:  Under Perl 6, the payload must
+be a Perl C<Blob>, which is mapped directly.  Under Perl 5, the payload
+must be just a canonical Perl bit string, which is a scalar whose utf-8
+flag is false.
+
+=back
+
+Examples:
+
+    [ 'Blob', 'md_blob', '1', '00101110100010' ] # binary
+
+    [ 'Blob', 'md_blob', '3', ''
+
+    [ 'Blob', 'md_blob', 'F', 'A705E' # hexadecimal
+
+    [ 'Blob', 'perl_blob', (pack 'H2', 'P') ]
+
+=head2 sys.type.NEBlob
+
+This node type represents a non-empty bit-string value; it is interpreted
+as a Muldis D C<sys.type.NEBlob>.  Its format is the same as for
+C<sys.type.Blob> but that the node type is 'Blob', its formats are
+respectively named for 'neblob', the payload may not be the empty string.
+
+Examples:
+
+    [ 'NEBlob', 'md_blob', '7', '523504376' ]
+
+    [ 'NEBlob', 'perl_neblob', (pack 'H2', 'Z') ]
+
+=head2 sys.type.Text
+
+This node type represents a bit string.  It has 2 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Text>.
+
+=item The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Text> value by directly
+mapping the payload.  Note that, while Concrete Muldis D may contain a few
+escape sequences, those would be replaced with what they represent prior to
+making a PHMD node.  Under Perl 6, the payload must be a Perl C<Text>,
+which is mapped directly.  Under Perl 5, the payload must be just a
+canonical Perl character string, which is a scalar whose utf-8 flag is
+true, or that doesn't contain any octets with a C<1>-valued highest bit.
+
+Examples:
+
+    [ 'Text', 'Ceres' ]
+
+    [ 'Text', 'サンプル' ] # note: Perl 5 needs "use utf8;" pragma to work
+
+    [ 'Text', '' ]
+
+=head2 sys.type.NEText
+
+This node type represents a non-empty bit-string value; it is interpreted
+as a Muldis D C<sys.type.NEText>.  Its format is the same as for
+C<sys.type.Text> but that the node type is 'Text', and the payload may not
+be the empty string.
+
+Examples:
+
+    [ 'NEText', 'Perl' ]
+
+=head1 NONSCALAR VALUES
+
+=head2 sys.type.Tuple
+
+This node type represents a tuple value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Tuple>.
+
+=item Type name; a Perl C<Str> value (or char-mode Perl scalar).
+
+=item The payload; a Perl C<Hash|Mapping> value.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Tuple> value whose
+heading was predefined, as a tuple data type, for referencing now by the
+type name, and whose body is defined now by the payload.  Each key+value
+pair of the payload defines a named attribute of the new tuple; the pair's
+key and value are, respectively, a Perl C<Str> that specifies the attribute
+name, and a PHMD node that specifies the attribute value.  The tuple body
+defined by the payload must correspond to the tuple heading named by the
+type name; that is, they must have the same degree, same attribute names,
+and compatible types.
+
+Examples:
+
+    [ 'Tuple', 'sys.type.Tuple.D0', {} ]
+
+    [ 'Tuple', 'nat.type.account.user.t', {
+        'login_name' => [ 'Text', 'hartmark' ],
+        'login_pass' => [ 'Text', 'letmein' ],
+        'is_special' => [ 'Bool', 'md_enum', 'true' ],
+    } ]
+
+    [ 'Tuple', 'nat.type.gene.person.t', {
+        'name' => [ 'Text', 'Michelle' ],
+        'age'  => [ 'Int', 'perl_int', 17 ],
+    } ]
+
+=head2 sys.type.Database
+
+This node type represents a database value; it is interpreted as a Muldis D
+C<sys.type.Database>.  Its format is the same as for C<sys.type.Tuple> but
+that the node type is 'Database', the type name must be of a database type
+rather than just a tuple type, and all payload PHMD values must be of
+relation types.
+
+Examples:
+
+    [ 'Database', 'sys.type.Database.D0', {} ]
+
+    [ 'Database', 'nat.type.account', {
+        'user' => [ 'Relation', 'nat.type.account.user.r', ... ],
+    } ]
+
+    [ 'Database', 'nat.type.gene', {
+        'person' => [ 'Relation', 'nat.type.gene.person.r', ... ],
+    } ]
+
+=head2 sys.type.Relation
+
+This node type represents a relation value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Relation>.
+
+=item Type name; a Perl C<Str> value (or char-mode Perl scalar).
+
+=item The payload; a Perl C<Array|Seq|Set|KeySet> of C<Hash|Mapping> value.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Relation> value whose
+heading was predefined, as a relation data type, for referencing now by the
+type name, and whose body is defined now by the payload.  Each element of
+the payload defines a tuple of the new relation; each element is as per the
+payload of a tuple-defining PHMD node, including the need to correspond to
+the relation heading, which is common to all tuples in it.
+
+Examples:
+
+    [ 'Relation', 'sys.type.Relation.D0C0', [] ]
+
+    [ 'Relation', 'sys.type.Relation.D0C1', [ {} ] ]
+
+    [ 'Relation', 'nat.type.account.user.r', [
+        {
+            'login_name' => [ 'Text', 'hartmark' ],
+            'login_pass' => [ 'Text', 'letmein' ],
+            'is_special' => [ 'Bool', 'md_enum', 'true' ],
+        },
+    ] ]
+
+    [ 'Relation', 'nat.type.gene.person.r', [
+        {
+            'name' => [ 'Text', 'Michelle' ],
+            'age'  => [ 'Int', 'perl_int', 17 ],
+        },
+    ] ]
+
+=head2 sys.type.Set
+
+This node type represents a set value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Set>.
+
+=item Type name; a Perl C<Str> value (or char-mode Perl scalar).
+
+=item The payload; a Perl C<Array|Seq|Set|KeySet> value.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Set> value whose heading
+was predefined, as a set data type, for referencing now by the type name,
+and whose body is defined now by the payload.  Each element of the payload
+defines a unary tuple of the new set; each element is a PHMD node that
+defines the C<value> attribute of the tuple.
+
+Examples:
+
+    [ 'Set', 'nat.type.account.country_name', [
+        [ 'Text', 'Canada' ],
+        [ 'Text', 'Spain' ],
+        [ 'Text', 'Jordan' ],
+        [ 'Text', 'Thailand' ],
+    ] ]
+
+    [ 'Set', 'nat.type.stats.some_ages', [
+        [ 'Int', 'perl_int', 3 ],
+        [ 'Int', 'perl_int', 16 ],
+        [ 'Int', 'perl_int', 85 ],
+    ] ]
+
+=head2 sys.type.Maybe
+
+This node type represents a maybe value; it is interpreted as a Muldis D
+C<sys.type.Maybe>.  Its format is the same as for C<sys.type.Set> but that
+the node type is 'Maybe', and the payload must have at most 1 element.
+
+Examples:
+
+    [ 'Maybe', 'nat.type.gene.person_death_date', [] ]
+
+    [ 'Maybe', 'nat.type.gene.person_death_date', [
+        [ 'Text', '2003.07.24' ],
+    ] ]
+
+=head2 sys.type.Seq
+
+This node type represents a sequence value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Seq>.
+
+=item Type name; a Perl C<Str> value (or char-mode Perl scalar).
+
+=item The payload; a Perl C<Array|Seq> value.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Seq> value whose heading
+was predefined, as a sequence data type, for referencing now by the type
+name, and whose body is defined now by the payload.  Each element of the
+payload defines a binary tuple of the new sequence; the element value is a
+PHMD node that defines the C<value> attribute of the tuple, and the element
+index is used as the C<index> attribute o the tuple.
+
+Examples:
+
+    [ 'Seq', 'nat.type.gene.sorted_person_name', [
+        [ 'Text', 'Alphonse' ],
+        [ 'Text', 'Edward' ],
+        [ 'Text', 'Winry' ],
+    ] ]
+
+    [ 'Seq', 'nat.type.stats.samples_by_order', [
+        [ 'Int', 'perl_int', 57 ],
+        [ 'Int', 'perl_int', 45 ],
+        [ 'Int', 'perl_int', 63 ],
+        [ 'Int', 'perl_int', 61 ],
+    ] ]
+
+=head2 sys.type.Bag
+
+This node type represents a bag value.  It has 3 elements:
+
+=over
+
+=item Node type: the Perl C<Str> value C<Bag>.
+
+=item Type name; a Perl C<Str> value (or char-mode Perl scalar).
+
+=item Format; one of: C<aoa_counted>, C<array_repeated>, C<perl_bag> (p6).
+
+=item The payload; a Perl C<Bag|KeyBag> value or C<Array|Seq> or
+C<Array|Seq> of C<Array|Seq>.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.type.Bag> value whose heading
+was predefined, as a bag data type, for referencing now by the type name,
+and whose body is defined now by the payload.  The payload is interpreted
+as follows:
+
+=over
+
+=item If the format is C<aoa_counted>, then the payload must be a Perl
+C<Array|Seq>, and each element of the payload defines a binary tuple of the
+new bag; the element is a 2-element C<Array|Seq>, and those 2 elements, by
+index order, are PHMD nodes that define the C<value> and C<count>
+attributes of the tuple; the count must be a positive integer.
+
+=item If the format is C<array_repeated>, then the payload must be a Perl
+C<Array|Seq>, and each element of the payload contributes to a binary tuple
+of the new bag; the element value is a PHMD node that defines the C<value>
+attribute of the tuple.  The bag has 1 tuple for every distinct (after
+format normalization) element value in the payload, and the C<count>
+attribute of that tuple says how many instances of said element were in the
+payload.
+
+=item If the format is C<perl_bag>, then the payload must be a Perl 6
+(there is no Perl 5 analogy) C<Bag|KeyBag> value; the payload elements are
+PHMD nodes corresponding to the C<value> attribute of the new bag's tuples,
+and the mapping is as you should expect.
+
+=back
+
+Examples:
+
+    [ 'Bag', 'nat.type.inventory.fruit', 'aoa_counted', [
+        [
+            [ 'Text', 'Apple' ],
+            [ 'PInt', 'perl_uint', 500 ],
+        ],
+        [
+            [ 'Text', 'Orange' ],
+            [ 'PInt', 'perl_uint', 300 ],
+        ],
+        [
+            [ 'Text', 'Banana' ],
+            [ 'PInt', 'perl_uint', 400 ],
+        ],
+    ] ]
+
+    [ 'Bag', 'nat.type.inventory.whatsits', 'array_repeated', [
+        [ 'Text', 'Foo' ],
+        [ 'Text', 'Quux' ],
+        [ 'Text', 'Foo' ],
+        [ 'Text', 'Bar' ],
+        [ 'Text', 'Baz' ],
+        [ 'Text', 'Baz' ],
+    ] ]
+
+=head1 SEE ALSO
+
+Go to L<Language::MuldisD> for the majority of distribution-internal
+references, and L<Language::MuldisD::SeeAlso> for the majority of
+distribution-external references.
+
+=head1 AUTHOR
+
+Darren Duncan (C<perl@DarrenDuncan.net>)
+
+=head1 LICENSE AND COPYRIGHT
+
+This file is part of the formal specification of the Muldis D language.
+
+Muldis D is Copyright © 2002-2007, Darren Duncan.
+
+See the LICENSE AND COPYRIGHT of L<Language::MuldisD> for details.
+
+=head1 ACKNOWLEDGEMENTS
+
+The ACKNOWLEDGEMENTS in L<Language::MuldisD> apply to this file too.
+
+=cut
