@@ -9,7 +9,7 @@ The system catalog or meta-model of Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Catalog version 0.3.0.
+This document is Language::MuldisD::Catalog version 0.3.1.
 
 =head1 PREFACE
 
@@ -53,14 +53,14 @@ context, and aren't re-described here):
         sys.type.Empty
 
         sys.type.Scalar
-            sys.type.Ordinal
+            sys.type.Ordered
 
-                # The following are all regular ordinal scalar types.
+                # The following are all regular ordered scalar types.
 
                 sys.type.Cat.ShortName
                 sys.type.Cat.LongName
 
-            # The following are all regular non-ordinal scalar types.
+            # The following are all regular non-ordered scalar types.
 
             # TODO
 
