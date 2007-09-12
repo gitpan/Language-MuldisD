@@ -9,16 +9,16 @@ Design document of the Muldis D language
 
 =head1 VERSION
 
-This document is Language::MuldisD::Basics version 0.5.1.
+This document is Language::MuldisD::Basics version 0.6.0.
 
 =head1 PREFACE
 
 This is the root document of the Muldis D language specification; the
 documents that comprise the remaining parts of the specification, in their
 suggested reading order (but that all follow the root), are:
-L<Language::MuldisD::Core>, L<Language::MuldisD::Catalog>,
-L<Language::MuldisD::Grammar>, L<Language::MuldisD::PerlHosted>,
-L<Language::MuldisD::Ext::Temporal>, L<Language::MuldisD::Ext::Spatial>.
+L<Language::MuldisD::Core>, L<Language::MuldisD::Grammar>,
+L<Language::MuldisD::PerlHosted>, L<Language::MuldisD::Ext::Temporal>,
+L<Language::MuldisD::Ext::Spatial>.
 
 =head1 DESCRIPTION
 
@@ -143,15 +143,16 @@ the map it can provide; whereas, a function can have an infinite map size.
 
 Within this documentation, the actually more generic term I<database> will
 be used to refer exclusively to a I<relational database>, so you should
-read the former as if it were the latter.  A I<database> is a tuple whose
-(distinctly named) attributes are all relation-typed; one holds all user
-data that is being maintained as an interconnected unit.  A database-typed
-variable, aka a I<dbvar>, is managed by a DBMS/RDBMS, and such is what is
-more informally referred to outside this documentation as a "database".
-Whenever a user is "using a database", they are reading or updating a
-dbvar.  Examples of databases are genealogy records, financial records, and
-a CMS' data.  A I<database> is I<not> a program.  A database-typed constant
-is a I<dbcon>.
+read the former as if it were the latter.  A I<database> is a tuple, all of
+whose (distinctly named) attributes are each relation-typed or
+database-typed (a recursion whose leaves are all relations); one holds all
+user data that is being maintained as an interconnected unit.  A
+database-typed variable, aka a I<dbvar>, is managed by a DBMS/RDBMS, and
+such is what is more informally referred to outside this documentation as a
+"database". Whenever a user is "using a database", they are reading or
+updating a dbvar.  Examples of databases are genealogy records, financial
+records, and a CMS' data.  A I<database> is I<not> a program.  A
+database-typed constant is a I<dbcon>.
 
 =item catalog
 
@@ -481,7 +482,7 @@ Abstract Muldis D is also what is used when Muldis D code is defined to
 generate/prepare and execute other Muldis D code at runtime (by reading or
 updating the meta-model / system catalog), which is "data definition".
 
-See L<Language::MuldisD::Catalog> first for details of the Muldis D
+See L<Language::MuldisD::Core> first for details of the Muldis D
 meta-model, which is also the grammar of Abstract Muldis D; see
 L<Language::MuldisD::Grammar> for the grammar of Concrete Muldis D; the
 latter document says how to parse Concrete Muldis D into Abstract Muldis D;
@@ -1061,33 +1062,12 @@ other kinds of constraints.
 =item C<main>
 
 A C<main> is the single anonymous procedure that is the "main program" of a
-Muldis D virtual machine; it must always be defined (but sometimes
-implicitly), and its execution begins simultaneously with the startup of
-the virtual machine, and its end of execution coincides with the shutdown
-of the virtual machine.  A C<main> is the same as a C<procedure>, but that
-it can not be invoked by any other Muldis D routine, it can not live in any
-depot, and it can not have any parameters.  In a non-hosted Concrete Muldis
-D application, this is fairly normal and straightforward; also, said
-routine is actually the only content of the program file, and its body
-defines any other routines or causes them to be loaded from depots, for
-subsequent invocation.  In a mixed-language application, where Muldis D
-code is invoked by another host language, the Muldis D C<main> is akin to a
-coroutine (with some limitations) whose execution is interleaved with the
-host language's routines; more specifically, there is an implicit default
-C<main> per virtual machine, having no statements in its body, and the host
-language explicitly defines, injects, and has executed its component
-statements on an ad-hoc basis (several can be done as a unit); the orders
-to execute by the host language of these statements constitutes the actual
-running of the C<main> routine, and the same statements can be re-run
-without repeated compilation.  A host language can not invoke a named
-Muldis D routine directly, but must go by way of a C<main> statement.
-Similarly to statements, the host language can declare lexical variables of
-the C<main>, and these can optionally be bound to host language variables;
-in fact, using such bound variables is the only canonical way to pass data
-directly between the virtual machine and the host language.  A C<main>
-lexical variable can't be un-declared without shutting down the virtual
-machine, though its memory footprint can be lessened by setting it to a
-small value, such as the default value for its type.
+non-hosted Concrete Muldis D application.  A C<main> is the same as a
+C<procedure>, but that it can not be invoked by any other Muldis D routine,
+it can not live in any depot, and it can not have any parameters.  In a
+mixed-language application, where Muldis D code is invoked by another host
+language, there is no Muldis D C<main> at all, since it would be redundant
+with host langauge routines.
 
 =back
 
@@ -1292,6 +1272,63 @@ others' made visible to it.  Or in other words, the program can both manage
 its own dbvars and be a DBMS client, and the program can either just use
 the DBMS itself or be a server of it.
 
+This is the hierarchy of invocation namespaces of DBMS entities; each
+actual normal DBMS entity is a child of one of the following tree leaves:
+
+    cat  # system catalog describing everything; all but .system updateable
+        cat.system
+        cat.native
+        cat.mount
+        cat.foreign
+        cat.interp
+    sys  # system-defined types and routines
+        sys.Core
+        sys.Core.<package>.<type>
+        sys.Core.<package>.<routine>
+        sys.<extension>
+        sys.<extension>.<package>.<type>
+        sys.<extension>.<package>.<routine>
+    app  # user-defined entities local to this vm/app, not a depot
+        app.<var>
+        app.<type>
+        app.<routine>
+        app.<package>
+        app.<package>.<type>
+        app.<package>.<routine>
+    glo  # global namespace to group currently mounted depots w mount names
+        glo.<depot>(.<schema>){0,}
+        glo.<depot>(.<schema>){0,}.<relvar>
+        glo.<depot>(.<schema>){0,}.<type>
+        glo.<depot>(.<schema>){0,}.<routine>
+        glo.<depot>(.<schema>){0,}.<package>
+        glo.<depot>(.<schema>){0,}.<package>.<type>
+        glo.<depot>(.<schema>){0,}.<package>.<routine>
+    dep  # entities in a depot ref their own depot with this
+        dep(.<schema>){0,}
+        dep(.<schema>){0,}.<relvar>
+        dep(.<schema>){0,}.<type>
+        dep(.<schema>){0,}.<routine>
+        dep(.<schema>){0,}.<package>
+        dep(.<schema>){0,}.<package>.<type>
+        dep(.<schema>){0,}.<package>.<routine>
+    sch  # entities in a schema ref their own schema with this
+        sch.<relvar>
+        sch.<type>
+        sch.<routine>
+        sch.<package>
+        sch.<package>.<type>
+        sch.<package>.<routine>
+    pkg  # entities in a package ref their own package with this
+        pkg.<type>
+        pkg.<routine>
+    lex  # entities in a routine or routine group ref their own with this
+        lex.param.<param>
+        lex.var.<var>
+        lex.func.<func>
+        lex.proc.<proc>
+
+=head2 Temp Old Entity Names Docs
+
 =over
 
 =item C<sys.*>
@@ -1444,6 +1481,60 @@ current program, that defines the mapping specs or routines to mediate a
 single C<nat.cat.*> and C<< foreign.<depot>.cat >> pair.
 
 =back
+
+I<This documentation is pending.>
+
+=head1 CATALOGS
+
+The Muldis D catalog relcons and relvars collectively reflect and/or
+control all entities in a DBMS.  Given that the catalog provides complete
+descriptions of both the interface and implementation of each DBMS entity,
+for user-defined entities, and just the interface for system-defined
+entities, understanding these is akin to understanding the native grammar
+of Muldis D.  This grammar is extremely simple by intention, but at a cost
+of being a little more verbose.
+
+=head2 Catalog Relcons For System-Defined Entities
+
+This section describes the structure of all C<< cont.sys.<unq_name> >>
+catalog relcons, which themselves describe all system-defined DBMS entities
+in a computer-readable manner.
+
+I<This documentation is pending.>
+
+=head2 Catalog Relvars For Depot Appearance Control
+
+This section describes the structure of all C<< cont.mnt.<unq_name> >>
+special catalog relvars, which reflect and control which depots are
+currently mounted in the DBMS.  Users update these to open or close
+client-server DBMS engine connections, or to attach or detach file-based
+database files, create or delete the depots themselves, or associate,
+disassociate, create, or delete shared memory based depots, mount or
+unmount filesystem-based depots, etc.  Updating these relvars has
+side-effects in making the entities belonging to a depot, named C<*.db.*>,
+appear in or disappear from view.  Details stored here include analogies to
+DSNs, database file names, DBMS server names and addresses, authentication
+details like login names and passwords.  What details are stored per depot
+can vary significantly depending on which Muldis D implementation is in
+use, but this variance is limited to just C<cont.mnt.depot_detail>.  Note
+that it is forbidden to update any C<mnt> relvars while a multi-statement
+transaction is active, because a transaction subjugates all entities
+concurrently visible or mounted in a DBMS, such that they must all commit
+or rollback as a unit.
+
+I<This documentation is pending.>
+
+=head2 Catalog Relvars for User-Defined Entities
+
+This section describes the structure of all C<< cont.cat.app.<unq_name> >>
+and C<< cont.cat.db.<depot>.<unq_name> >> general catalog relvars, the set
+of C<< <unq_name> >> for each of which is identical, that reflect and
+control user-defined entities, including data types, routines, non-lexical
+variables (which are all relvars, real or virtual), state constraints, etc.
+Users update these to create or drop their relvars, data types, routines,
+constraints, etc.  Updating these catalog relvars has side-effects in
+making global data relvars, named C<*.data.*>, appear, disappear, or change
+in structure.
 
 I<This documentation is pending.>
 
