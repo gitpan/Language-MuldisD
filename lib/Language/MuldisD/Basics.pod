@@ -9,7 +9,7 @@ Language::MuldisD::Basics -
 
 =head1 VERSION
 
-This document is Language::MuldisD::Basics version 0.7.0.
+This document is Language::MuldisD::Basics version 0.8.0.
 
 =head1 PREFACE
 
@@ -521,13 +521,19 @@ used to select it.
 A I<union type> is a data type that has at least 2 immediate subtypes, and
 every one of its values is also a value of an immediate subtype; that is,
 the MST of every value in a union type is not that type.  An I<intersection
-type> is a data type that has at least 2 immediate supertypes.  A
-I<difference type> is a data type that has exactly 1 immediate supertype,
+type> is a data type that has at least 2 immediate supertypes.  In this
+way, C<Universal> is a union type of all other types, and C<Empty> is an
+intersection type of all other types.
+
+A I<difference type> is a data type that has exactly 1 immediate supertype,
 and that supertype is a union type such that the difference type and
 another peer subtype of that union type are complementary with respect to
 the union type; every union type value is in either the difference type or
-its complement, but not both.  In this way, C<Universal> is a union type of
-all other types, and C<Empty> is an intersection type of all other types.
+its complement, but not both.  An I<exclusion type> is like a I<union> type
+except that it only consists of the values that are members of exactly an
+odd number of its immediate subtypes.  A I<negation type> is a type that
+consists of only the values that aren't members of a single other type; it
+is like a difference type where the common supertype is C<Universal>.
 
 A I<root type> is a data type for which all of its values can be selected
 by the same single selector, and which has no proper supertype that is a
@@ -567,14 +573,21 @@ which serve as maximal data types for each category, respectively.  The 5
 types are all mutually disjoint, and C<Universal> is a union type over all
 of them.
 
-To keep things simpler, every data type (save C<Universal> and C<Empty>)
-must be a proper subtype of exactly 1 of the 5 categories, and can not
-include values from several of them.  Therefore, every data type is said to
-be either a I<scalar type>, a I<tuple type>, a I<relation type>, a
-I<quasi-tuple type>, or a I<quasi-relation type>, depending which category
-all of its values come from.  In similar fashion, a I<nonscalar type> is
-generally any type that is not a scalar type, if we ignored quasi-nonscalar
-types, meaning it is either a tuple type or a relation type.
+Most data types each consist exclusively of values from exactly one of the
+above 5 categories, and each such type does not include values from several
+of them.  Therefore, every such data type is said to be either a I<scalar
+type>, a I<tuple type>, a I<relation type>, a I<quasi-tuple type>, or a
+I<quasi-relation type>, depending which category all of its values come
+from.  In similar fashion, a I<nonscalar type> is generally any type that
+is not a scalar type, if we ignored quasi-nonscalar types, meaning it is
+either a tuple type or a relation type.
+
+A I<remnant type> is any type having at least 2 values, where at least 2 of
+the values are not allowed to be in a same single type of one of the other
+5 categories, according to their type definition rules.  The remnant
+category is the complement category to all the others in that every
+possible proper subset of the values of C<Universal> can now be represented
+by a type that fits in one of the 6 categories, save C<Empty> itself.
 
 The identity of every scalar type is defined by its name alone, and every
 scalar type must have a distinct name that is explicitly defined, either by
@@ -599,6 +612,12 @@ A quasi-nonscalar type is the same as a nonscalar type as far as the means
 of identifying it go (by its structure, not by its name), but that
 particular kinds of components are permitted in quasi-nonscalar types that
 aren't permitted in nonscalar types (and aren't permitted in scalar types).
+
+A remnant type is always defined in terms of one or more other types, and
+it can never be a root type with defined components.  The identity of every
+remnant type is defined only in terms of it being, directly or indirectly,
+a union or negation of other non-remnant types.  As per with nonscalars,
+several independently defined remnant types can be considered the same one.
 
 To keep things simpler, every data type in Muldis D has a name by which it
 is referenced, even nonscalar and quasi-nonscalar types; however, the names
@@ -728,28 +747,29 @@ same-named attribute of the tuple or relation supertype.
 =head2 Quasi-Tuple Types and Quasi-Relation Types
 
 The union types C<Universal>, C<Tuple>, C<Relation> (and the system-defined
-subtypes of the latter 2) can be used as the declared types of such as
-variables and routine parameters, but they can not be used as the declared
-types of scalar possrep or nonscalar (tuple or relation) attributes.  The
-declared type of each of the latter must be either a scalar type, or a
-specific tuple or relation subtype (meaning tuple or relation types that
-have specific attribute sets defined for them).
+subtypes of the latter 2), and remnant types, can be used as the declared
+types of such as variables and routine parameters, but they can not be used
+as the declared types of scalar possrep or nonscalar (tuple or relation)
+attributes.  The declared type of each of the latter must be either a
+scalar type, or a specific tuple or relation subtype (meaning tuple or
+relation types that have specific attribute sets defined for them).
 
 If all data types were scalar or nonscalar, then it would not be possible
 to define operators with N-ary parameters whose declared types are any of
-the aforementioned 3 union types.  That is, an N-ary parameter is usually
-relation-typed, such that the multiplicity of values that the parameter can
-take are each provided as a tuple of said relation; however, as relation
-attributes can not have said union types as their declared types, it would
-not be possible to implement an N-ary relational join operator, for
-example, since each relation being joined would probably have a different
-heading than the others.
+the aforementioned 3 union types plus the remnant types.  That is, an N-ary
+parameter is usually relation-typed, such that the multiplicity of values
+that the parameter can take are each provided as a tuple of said relation;
+however, as relation attributes can not have said union types as their
+declared types, it would not be possible to implement an N-ary relational
+join operator, for example, since each relation being joined would probably
+have a different heading than the others.
 
 Quasi-tuple types and quasi-relation types exist as a solution to this
 problem, such that the I<quasi-heading> of one is allowed to include
 attributes whose declared types are any type at all, including the union
 types C<Universal>, C<Tuple>, C<Relation>, C<QuasiTuple>, C<QuasiRelation>,
-and subtypes of tuple and relation without specific attribute sets.
+and subtypes of tuple and relation without specific attribute sets, and
+remnant types.
 
 This said, the situations in which quasi-nonscalar types may be used are
 limited; only quasi-nonscalar types may have quasi-nonscalar types as
@@ -760,6 +780,16 @@ corresponding nonscalar type operators, partly because the former are not
 intended to replace the latter for the majority of use cases, and partly
 because some of them are simply impossible to implement for
 quasi-nonscalars: C<unwrap>, C<ungroup>.
+
+=head2 Remnant Types
+
+Generally speaking, a remnant type is what results when one defines a union
+type over 2 other types whose values are mutually incompatible for use in
+the same relation attribute, such as 2 relation types with different
+degrees or attribute names.  Generally speaking, a remnant type is the
+declared type of each attribute of a quasi-nonscalar type, when said
+attribute isn't one of the special system-defined maximal types.  A remnant
+type also results from defining a negation type over a non-remnant type.
 
 =head2 Finite Types and Infinite Types
 
@@ -923,6 +953,34 @@ named rather than positional parameters; in the case of N-ary routines, the
 N similar argument values come by way of a single nonscalar (or, if
 necessary, quasi-nonscalar) typed parameter.
 
+They following hierarchy should briefly illustrate how the kinds of
+routines are similar or dissimilar, but it expressly does not indicate
+substitutability:
+
+    routine
+        functional
+            function
+            inner_function
+            type_constraint
+            transition_constraint
+        imperative
+            deterministic
+                update_operator
+                inner_update_operator
+            nondeterministic
+                system_service
+                procedure
+                inner_procedure
+                main
+
+Specifically, the routine kinds are all of the leaf nodes in the above
+hierarchy, and every Muldis D routine is designated as exactly one of
+those; the non-leaf nodes are not routine kinds.
+
+Note that, in an environment where Muldis D is being hosted under another
+language, the other language may only directly invoke these 4 kinds of
+routines: C<function>, C<update_operator>, C<system_service>, C<procedure>.
+
 =over
 
 =item C<function>
@@ -936,24 +994,99 @@ can be named for internal reuse).  A C<function> is pure and deterministic
 in the functional-language sense, such that all of its 0..N parameters are
 read-only / not subject to update, it has no lexical variables at all, and
 that it can only see its own parameters, if it has any; it can not see any
-global variables of any kind, and that it can only invoke C<function>
-routines.  The vast majority of invokable system-defined routines are
-C<function>; they include all value selectors, and the typical numeric,
-string, and relational operators, such that you would compose a typical
-database "select" query out of.
+global variables of any kind, and that it can only invoke C<function> (and
+local C<inner_function>) routines.  A C<function> invocation is trivially
+atomic, since it doesn't conceptually update anything.  The vast majority
+of invokable system-defined routines are C<function>; they include all
+value selectors, and the typical numeric, string, and relational operators,
+such that you would compose a typical database "select" query out of.
+
+=item C<inner_function>
+
+A C<inner_function> is the same as a C<function>, but that it is
+quasi-lexically scoped within another, non-lexical routine, and it is only
+visible within or invokable by either its parent routine or its sibling
+C<inner_function>.  Conceptually speaking, a C<inner_function> is part of
+the definition of the body of the parent routine (like a value expression
+in general), but is isolated into a named C<function>-like entity for
+technical / language design reasons.
+
+=item C<type_constraint>
+
+A C<type_constraint> is the same as a C<inner_function>, but that it is
+part of the definition of a data type (every data type composes exactly one
+of these) rather than a routine, it is invoked automatically by the DBMS
+when a value of that type is being selected, and it always results in a
+C<Bool>.  The parameters of a C<type_constraint> carry information about
+the value selection attempt, and the C<type_constraint> results in either
+C<Bool:true> if the described value would be a member of the data type, or
+C<Bool:false> if not; in the latter case, the DBMS would then throw a
+type-constraint-violation exception (resulting in a transaction rollback
+where applicable), or in the former case, it would consider the selection a
+success.  If the data type being selected of is defined as a scalar root
+type, then the parameter list matches its initial/core possrep's component
+attributes list (their names and declared types), and the arguments are the
+candidate values for those attributes; or, if the data type being selected
+of is defined as a restriction of one other data type, then the parameter
+list has exactly one parameter whose name is C<topic> and whose declared
+type is that other data type.  Note that, because Muldis D requires dbvars
+to be defined over named data types, all I<state constraints> for a
+database, including uniqueness keys or foreign keys or other
+state-constraining business rules, are normally defined as the
+C<type_constraint> for the type which that database is.  Conceptually
+speaking, a C<type_constraint> will execute as the beginning part of a
+statement, prior to any attempt to update any variable's state or affect
+the environment.
+
+=item C<transition_constraint>
+
+A C<transition_constraint> is the same as a C<type_constraint> except that
+it is part of the definition of a variable rather than of a data type, and
+it is invoked automatically by the DBMS when that variable is being
+updated.  A C<transition_constraint> takes exactly 2 parameters, whose
+names are C<before> and C<after>, and whose declared types are both the
+same as that of the variable; it returns C<Bool:true> if the variable is
+allowed (according to current business rules) to transition directly from
+the C<before> state to the C<after> state, or C<Bool:false> if not; in the
+latter case, the DBMS would then throw a transition-constraint-violation
+exception (resulting in a transaction rollback of at least the statement
+that attempted the update), or in the former case, it would consider the
+update a success (barring other causes for failure).  Conceptually
+speaking, a C<transition_constraint> will execute as the ending part of a
+statement, right at the moment of trying to update any variable's state,
+with the result of a value expression or otherwise; in the case of a
+multi-update statement, all the updates would happen simultaneously, so a
+transition failure for any update would prevent all that statement's
+updates from occurring.
 
 =item C<update_operator>
 
-An C<update_operator> is an explicitly invokable procedure with 1..N
-parameters that has at least one parameter which is subject to update, and
-that can only see or influence its own lexical variables (no globals); it
-can only be invoked as the root part of a statement in another routine.  An
-C<update_operator> can only invoke C<function> and C<update_operator>
-routines, and it is much like a C<function>, including being deterministic,
-but that its result value is via a parameter.  Most non C<function>
-system-defined routines are C<update_operator>; they include all C<assign>
-operators, plus some relational-assignment short-hands such as
-"assign_insert", "assign_update", "assign_delete".
+An C<update_operator> is the same as a C<function>, but that it is
+imperative rather than functional (its invocation does not result in or
+represent a value, and it is invoked as the root part of another routine's
+statement rather than in an expression), and it has at least one parameter
+which is subject to update; any result that it produces is returned by
+updating said parameters.  The body of an updater is a single statement
+(plus any support expressions) that invokes one or more C<update_operator>
+(recursively down to some system-defined variable assignment operator); if
+invoking several, it is a multi-update statement.  An C<update_operator>
+can only invoke C<function> and C<update_operator> (and local
+C<inner_(function|update_operator)>) routines.  Despite being imperative,
+an C<update_operator> has no lexical variables save for its
+subject-to-update parameters, and it just assigns to those as its last/only
+action; but like functions, it does have named expression nodes whose use
+can ease program writing like lexical variables would have.  An
+C<update_operator> invocation is implicitly atomic, and a failure in the
+middle of one will at least rollback any partial update that it may
+conceptually have done.  Most invokable system-defined imperative routines
+are C<update_operator>; they include all C<assign> operators, plus some
+relational-assignment short-hands such as "assign_insert", "assign_update",
+"assign_delete".
+
+=item C<inner_update_operator>
+
+A C<inner_update_operator> is to an C<update_operator> what a
+C<inner_function> is to a C<function>.
 
 =item C<system_service>
 
@@ -962,63 +1095,43 @@ with 0..N parameters that can reach outside of the deterministic DBMS
 environment in order to do non-deterministic things (besides working with
 depots), such as to initiate I/O of various kinds, or fetch the current
 date and time, or generate a random number.  Given the nature of this
-beast, users can not define their own C<system_service> functions but by
+beast, users can not define their own C<system_service> routines but by
 updating the Muldis D implementation's source code itself.  Invoking a
-C<system_service> function can have side-effects outside of the DBMS, but
-it will not alter anything inside the DBMS aside from any of its
-subject-to-update parameters.
+C<system_service> can have side-effects outside of the DBMS, but it will
+not alter anything inside the DBMS aside from any of its subject-to-update
+parameters.
 
 =item C<procedure>
 
 A C<procedure> is an explicitly invokable routine with 0..N parameters that
-can see and update global variables, and can invoke any kind of invokable
-routine; it can only be invoked as the root part of a statement in another
-routine.  The C<procedure> is the only explicitly invokable routine that
-can directly reference global containers, whether catalog or data (the
-non-invokable C<main> can too).  The vast majority of C<procedure> that
-exist will be user-defined.  But some system-defined routines that would
-otherwise be C<function> or C<update_operator> are C<procedure> instead
-solely because they are non-deterministic; an example is an operator that
-derives a tuple sequence from a relation without fully sorting the tuples,
-because the result is fundamentally random and non-repeatable.
+can directly see and update global variables (both catalog and data), and
+is generally the only kind of routine that can; every call chain that is
+meant to work with a persisting (global) dbvar must generally include a
+C<procedure> invocation.  The body of a C<procedure> consists of 0..N
+statements which conceptually run in sequence (not concurrently).  A
+C<procedure> can invoke every kind of explicitly invokable routine.  A
+C<procedure> invocation is I<not> implicitly atomic; unless a wider-scope
+explicit transaction is active, an aborted C<procedure> will leave an
+incomplete update (though not one that violates any constraints or leaves
+the system in an inconsistant state), because each of its statements had
+conceptually auto-committed; so Muldis D does support batch operations
+where partial completion or interruptability is acceptable.  A procedure
+can define explicit (lexically scoped) transactions over multiple
+consecutive statements, and is generally the only kind of routine that can;
+specifically, those statements are parcelled together into a separate
+C<inner_procedure>, and then that is invoked indirectly by way of a new
+statement in the first procedure that invokes the system-defined
+C<try_catch> procedure.  The vast majority of C<procedure> that exist will
+be user-defined.  But some system-defined routines that would otherwise be
+C<function> or C<update_operator> are C<procedure> instead solely because
+they are non-deterministic; an example is an operator that derives a tuple
+sequence from a relation without fully sorting the tuples, because the
+result is fundamentally random and non-repeatable.
 
-=item C<type_constraint>
+=item C<inner_procedure>
 
-A C<type_constraint> is an implicitly invokable routine that is associated
-with / is part of a data type definition and is invoked automatically when
-a value of that type is being selected; it asserts whether said value,
-which by this time is known to be acceptable to the current data type's
-more generic supertype, is within the data type's own more restricted
-domain.  This routine can only see its own lexical variables (no globals).
-This routine has 1 read-only parameter, which is the value to examine, and
-it results in a Bool.  The DBMS would then throw a
-type-constraint-violation exception if the constraint results in False, and
-no-op if it results in True.  Conceptually speaking, a C<type_constraint>
-will execute before any other kinds of constraints.
-
-=item C<state_constraint>
-
-A C<state_constraint> is an implicitly invokable routine that can see
-global variables and is invoked automatically at the end of every statement
-that the DBMS executes, wherein it asserts that all global variables are
-collectively in a valid state; it can see said variables directly, but
-updates none.  This routine has no parameters and results in a Bool.  The
-DBMS responds as per a type constraint; if the constraint fails, then the
-just-executed statement is rolled back, and an exception is thrown.
-Conceptually speaking, a C<state_constraint> will execute after all
-C<type_constraint> and before all C<transition_constraint>.
-
-=item C<transition_constraint>
-
-A C<transition_constraint> is an implicitly invokable routine that can see
-global variables and is invoked automatically at the end of every statement
-that the DBMS executes, wherein it asserts that all global variables have
-collectively transitioned in a valid fashion between their before-update
-state and their after-update state; it can see both versions of said
-variables directly, but updates none.  This routine has no parameters and
-results in a Bool.  The DBMS responds as per a state constraint.
-Conceptually speaking, a C<transition_constraint> will execute after all
-other kinds of constraints.
+A C<inner_procedure> is to an C<procedure> what a C<inner_function> is to a
+C<function>.
 
 =item C<main>
 
@@ -1035,7 +1148,7 @@ with host langauge routines.
 Note that Muldis D currently has no direct support for the concept of a
 trigger-routine that can update a database; updating virtual relvars or
 invoking C<procedure> are recommended instead.  As for non-updating
-trigger-routines, the state/transition constraint routines already perform
+trigger-routines, the type/transition constraint routines already perform
 that feature.  I<The feature in question may be directly supported later?>
 
 I<This documentation is pending.>
@@ -1143,14 +1256,21 @@ Transactions in Muldis D come in both implicit and explicit varieties, but
 the implicit transactions only exist (that is, only have an effect) when
 there are no explicit transaction active.
 
-The normal way to specify an explicit transaction is to define a I<try>
-block, since a I<try> block doubles as a transaction whose lifetime is
-bound to the lexical scope of that block.  The transaction will begin when
-that scope is entered and end when that scope is exited; if the scope is
-exited normally, its transaction commits; if the scope terminates early due
-to a thrown exception, its transaction rolls back.  Moreover, in a pure
-Muldis D application, a I<try> block is the I<only> kind of explicit
-transaction.
+The most generalized way to specify an explicit transaction within Muldis D
+is to take the statements comprising it and isolate them into their own
+C<procedure> (or C<inner_procedure>), then invoke that by way of the
+system-defined C<try_catch> procedure; the invoked procedure is
+conceptually an exception-trapping I<try block>.  A procedure invoked
+through C<try_catch> is wrapped in a new child transaction that is tied to
+its lexical scope.  The transaction will begin when that scope is entered
+and end when that scope is exited; if the scope is exited normally, its
+transaction commits; if the scope terminates early due to a thrown
+exception, its transaction rolls back.  In the latter case, C<try_catch>
+will catch that exception, so the rollback doesn't proceed further than
+itself, but that if the I<catch block> it then invokes also throws (or
+re-throws) an exception, that is not caught here.  In a pure Muldis D
+application, this lexically-scoped exception handling mechanism is the
+I<only> kind of generalized explicit transaction.
 
 In a mixed-language application, when Muldis D routines are invoked by a
 host language, the host language is allowed to specify further parent-most
@@ -1168,16 +1288,16 @@ Muldis D C<update_operator> and C<system_service>, and by extension, every
 Muldis D statement that is an invocation of said.  Or more accurately, an
 update operation (including a multi-update operation) is implicitly atomic,
 and will either succeed and commit as a whole, or fail and rollback as a
-whole. This is as if every update operator invocation was surrounded by its
-own I<try> block, except that any thrown exceptions are not caught.
-Similarly, every C<function> and C<\w+_constraint> has an implicit
+whole.  This is as if every update operator invocation was surrounded by
+its own I<try> block, except that any thrown exceptions are not caught.
+Similarly, every C<function> and C<\w+_constraint> is trivially a
 transaction, though since these never update anything, all that really
 means is that they see a consistent view of their environment.
 
-By contrast, every C<procedure> and C<main> is neither implicitly a
-transaction nor atomic (except for portions wherein that have explicit
-I<try> blocks), so you can use a procedure to define an operation where you
-want to keep partial results of a failure.
+By contrast, every C<procedure> (and C<inner_procedure>) and C<main> is
+neither implicitly a transaction nor atomic (except when externally wrapped
+in one), so you can use a procedure to define an operation where you want
+to keep partial results of a failure.
 
 Since failures are always accompanied by thrown exceptions, a failure will
 unwind the call stack and rollback any active transactions one nesting
@@ -1206,10 +1326,10 @@ synchronized); by doing one of those two actions, a less capable
 implementation can still be considered reliable and recommendable.>
 
 Some Muldis D commands can not be executed within the context of a parent
-transaction; in other words, they can only be executed directly by an
-anonymous routine, the main examples being those that mount or unmount a
-persistent repository; this is because such a change in the environment
-mid-transaction would result in an inconsistent state.
+transaction; in other words, they can only be executed directly by a
+C<procedure> etc or the host language, the main examples being those that
+mount or unmount a persistent repository; this is because such a change in
+the environment mid-transaction would result in an inconsistent state.
 
 I<Muldis D lets you explicitly place locks on resources that you don't
 want external processes to change out from under you, and these locks do
@@ -1232,6 +1352,10 @@ that can have its global variables made visible to other processes, or have
 others' made visible to it.  Or in other words, the program can both manage
 its own dbvars and be a DBMS client, and the program can either just use
 the DBMS itself or be a server of it.
+
+I<Note that all entity names in Muldis D are case-sensitive, as with
+character strings in general.  Implementations should take special care to
+compensate for any case-insensitive storage system they might use.>
 
 This is the hierarchy of invocation namespaces of DBMS entities:
 
@@ -1281,220 +1405,12 @@ This is the hierarchy of invocation namespaces of DBMS entities:
     pkg  # entities in a package ref their own package with this
         pkg.<type>
         pkg.<routine>
-    lex  # entities in a routine or routine group ref their own with this
+    inn  # entities in a main|inner routine ref child|sib rtns with this
+        inn.<routine>
+    lex  # entities in a rtn ref own lexical params|exprs|vars with this
         lex.param.<param>
+        lex.expr.<expr>
         lex.var.<var>
-        lex.func.<func>
-        lex.proc.<proc>
-
-=head2 Temp Old Entity Names Docs
-
-=over
-
-=item C<sys.*>
-
-Under here are all non-lexical system-defined, hardwired, readonly, eternal
-entities.
-
-=item C<sys.type.*>
-
-These are the invocation-names of system-defined data types.
-
-=item C<sys.rtn.*>
-
-These are the invocation-names of system-defined (explicitly invokable)
-routines.
-
-=item C<sys.cat>
-
-This is the read-only system catalog that describes all system-defined
-entities, including data types, operators, and all catalogs.
-
-=item C<sys.data.*>
-
-These are some system-defined constants that hold values commonly useful in
-user-defined routines; providing the constants this way is an alternative
-to defining niladic functions which result in them.  Moreover, some
-system-defined functions that do have arguments may also or alternately
-have analagous 2+ degree relcons here for use as lookup tables.
-
-=item C<nat.*>
-
-Under here are all non-lexical user-defined entities that are either
-private to the current program, or that fundamentally live with the current
-program but are shareable with peer programs (where the peer programs are
-clients and the current program a server), or that are the current
-program's naturalized perception of entities that fundamentally live with
-peer programs (where the peer programs are servers and the current program
-a client), or perhaps in a disk file instead.  If the current program is
-primarily viewed by users as a "DBMS server" or "transient RAM-based
-embedded DBMS", then the "database" they are using (via their client
-programs) is probably of the second entity group.  If the current program
-is primarily viewed by users as a "DBMS client" or "persistent file-based
-embedded DBMS", then the "database" they are using is probably of the third
-entity group.  In the third case, it is very likely that some details of
-this perception are coded into the current program itself and that the peer
-program has a different perception that excludes those details; in that
-case, the peer program is somewhat of a slave of the current program, as is
-applicable.  As far as non-lexical container/variable entities go, only
-those whose type is C<Database> can be actually shared between peer
-programs, and any other non-lexical containers/variables, if any are
-strictly private to the current program.
-
-=item C<nat.type.*>
-
-These are the invocation-names of native user-defined data types.
-
-=item C<nat.rtn.*>
-
-These are the invocation-names of native user-defined explicitly invokable
-routines.
-
-=item C<nat.cat>
-
-This is the user-updateable catalog that describes all native user-defined
-entities, including data types, operators, data dbvars, and any other
-private non-lexical variables that might exist.
-
-=item C<nat.data.*>
-
-These are the user-updateable native data dbvars and other non-lexical
-containers/variables themselves, that the current program conceptually
-or actually stores all of its transient and persistent data in.
-
-=item C<lex.*>
-
-Under here are all lexical entities whose invokability or life exists
-solely within the scope of an executing routine; the definitions of those
-entities are part of the C<*.cat> that defines the routines themselves.
-
-=item C<lex.param.*>
-
-These are the invocation names within a routine of that routine's
-parameters, both its read-only and updatable ones.
-
-=item C<lex.expr.*>
-
-These are the invocation names within a routine of that routine's
-internally reusable value-expressions.
-
-=item C<lex.var.*>
-
-These are the invocation names within a routine of that routine's lexical
-data variables and constants which are not parameters.
-
-=item C<lex.block.*>
-
-I<TODO:  Some namespace like this for statements or blocks of statements
-that are scoped by if/else, or loops, or try/catch, etc.>
-
-=item C<mnt>
-
-This is a special user-updateable catalog which controls the mounting and
-unmounting of depots; it is minimalist and does little else besides that;
-most meta-data seen/updated here is specific to the Muldis D implementation
-in use.
-
-=item C<foreign.*>
-
-Under here are all non-lexical user-defined dbvar (catalog and data)
-entities for which the current program is primarily viewed by users as a
-"DBMS client" or "persistent file-based embedded DBMS"; specifically, these
-are a cleaned-up current program perception of how the foreign program sees
-its own entities, which may or may not be the same as how the current
-program's naturalized version under C<nat.*> is.  Generally speaking, when
-the current program is reverse-engineering or scanning the remote program,
-or the disk files, the results of that appear under C<foreign.*>, and not
-under C<nat.*>; that's not to say that the current program can't
-subsequently update its C<nat.*> catalog to match, but doing so is strictly
-optional, and typically done just by generic DBMS utility programs, rather
-than programs that do a specific job like payroll or genealogy.  There is a
-distinct foreign.<depot>.* name-space for each connection to the other
-program, or for each disk file, which are considered by Muldis D as a
-I<depot>.  Note that there is no C<< foreign.<depot>.type.* >> and C<<
-foreign.<depot>.rtn.* >> and C<< foreign.<depot>.data.* >>, as the current
-program may not invoke those under those names, though their descriptions
-are available under C<< foreign.<depot>.cat >>; they are only invokable via
-nat.* perceptions of them.  Note that, while cleaned up, a number of
-implementation-specific details may leak through here, possibly defined in
-a non-Muldis D language, if the peer program is not implemented itself by
-Muldis D and some of its concepts won't automatically express in
-Muldis D native terms, without user interpretation.
-
-=item C<< foreign.<depot>.cat >>
-
-This is the probably reverse-engineered catalog of the foreign DBMS
-program, or disk file that this depot represents; it is directly
-user-updateable as much as that makes sense.
-
-=item C<interp.*>
-
-Under here are Muldis D implementation specific mapping details that bridge
-between corresponding C<nat.cat.*> and C<< foreign.<depot>.cat >> entities,
-sometimes using non-Muldis D but Engine-specific language.  These details
-interpret between the foreign entities and their native perceptions.
-
-=item C<< interp.<depot>.cat >>
-
-This is a catalog, possibly reverse-engineered or possibly coded into the
-current program, that defines the mapping specs or routines to mediate a
-single C<nat.cat.*> and C<< foreign.<depot>.cat >> pair.
-
-=back
-
-I<This documentation is pending.>
-
-=head1 CATALOGS
-
-The Muldis D catalog relcons and relvars collectively reflect and/or
-control all entities in a DBMS.  Given that the catalog provides complete
-descriptions of both the interface and implementation of each DBMS entity,
-for user-defined entities, and just the interface for system-defined
-entities, understanding these is akin to understanding the native grammar
-of Muldis D.  This grammar is extremely simple by intention, but at a cost
-of being a little more verbose.
-
-=head2 Catalog Relcons For System-Defined Entities
-
-This section describes the structure of all C<< cont.sys.<unq_name> >>
-catalog relcons, which themselves describe all system-defined DBMS entities
-in a computer-readable manner.
-
-I<This documentation is pending.>
-
-=head2 Catalog Relvars For Depot Appearance Control
-
-This section describes the structure of all C<< cont.mnt.<unq_name> >>
-special catalog relvars, which reflect and control which depots are
-currently mounted in the DBMS.  Users update these to open or close
-client-server DBMS engine connections, or to attach or detach file-based
-database files, create or delete the depots themselves, or associate,
-disassociate, create, or delete shared memory based depots, mount or
-unmount filesystem-based depots, etc.  Updating these relvars has
-side-effects in making the entities belonging to a depot, named C<*.db.*>,
-appear in or disappear from view.  Details stored here include analogies to
-DSNs, database file names, DBMS server names and addresses, authentication
-details like login names and passwords.  What details are stored per depot
-can vary significantly depending on which Muldis D implementation is in
-use, but this variance is limited to just C<cont.mnt.depot_detail>.  Note
-that it is forbidden to update any C<mnt> relvars while a multi-statement
-transaction is active, because a transaction subjugates all entities
-concurrently visible or mounted in a DBMS, such that they must all commit
-or rollback as a unit.
-
-I<This documentation is pending.>
-
-=head2 Catalog Relvars for User-Defined Entities
-
-This section describes the structure of all C<< cont.cat.app.<unq_name> >>
-and C<< cont.cat.db.<depot>.<unq_name> >> general catalog relvars, the set
-of C<< <unq_name> >> for each of which is identical, that reflect and
-control user-defined entities, including data types, routines, non-lexical
-variables (which are all relvars, real or virtual), state constraints, etc.
-Users update these to create or drop their relvars, data types, routines,
-constraints, etc.  Updating these catalog relvars has side-effects in
-making global data relvars, named C<*.data.*>, appear, disappear, or change
-in structure.
 
 I<This documentation is pending.>
 

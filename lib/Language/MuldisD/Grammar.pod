@@ -9,7 +9,7 @@ How to format Concrete Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Grammar version 0.6.1.
+This document is Language::MuldisD::Grammar version 0.7.0.
 
 =head1 PREFACE
 
@@ -28,7 +28,9 @@ D>.  This grammar primarily tests for well-formedness.
 
 See also, for example, L<Language::MuldisD::PerlHosted> for a description
 of the core Perl data structures that you would probably use instead of the
-grammar below when using a Muldis D implementation in a Perl application.
+grammar below when using a Muldis D implementation in a Perl application;
+moreover, that other document is necessary to understand the meaning of
+some parts of this Grammar document.
 
 I<This documentation is pending.>
 
@@ -43,20 +45,24 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     use v6-alpha;
 
-    # grammar MuldisD:ver<0.6.1>:auth<cpan:DUNCAND>;
-    grammar MuldisD-0.6.1-cpan:DUNCAND;
+    # grammar MuldisD:ver<0.7.0>:auth<cpan:DUNCAND>;
+    grammar MuldisD-0.7.0-cpan:DUNCAND;
 
     token start {
         (MuldisD)
         <spec_sep>
-        <version_and_authority>
+        <authority>
+        <spec_sep>
+        <version>
         <spec_sep>
         <list_open>
             (<literal>)
         <list_close>
     }
 
-    token version_and_authority { <quoted_text_str> }
+    token authority { <quoted_text_str> }
+
+    token version { <quoted_text_str> }
 
     token literal {
           <bool>
@@ -67,8 +73,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         | <text>
         | <tuple>
         | <relation>
-        | <cat_short_name>
-        | <cat_long_name>
+        | <cat_name>
+        | <cat_name_chain>
     }
 
     token bool { (Bool) <spec_sep> (false|true) }
@@ -316,18 +322,18 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     token pair_sep { \s+ '=>' \s+ }
 
-    token type_name { <quoted_text_str> }
+    token type_name { <quoted_name_chain_str> }
 
-    token cat_short_name {
-        (Cat.ShortName)
+    token cat_name {
+        (Cat.Name)
         <spec_sep>
-        <quoted_text_str>
+        <quoted_ne_text_str>
     }
 
-    token cat_long_name {
-        (Cat.LongName)
+    token cat_name_chain {
+        (Cat.NameChain)
         <spec_sep>
-        <quoted_text_str>
+        <quoted_name_chain_str>
     }
 
     token spec_sep { ':' }
@@ -344,15 +350,25 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         <text_delim>
     }
 
+    token quoted_name_chain_str {
+        <text_delim>
+            ((<nc_elem_char>+) (<nc_elem_sep> (<nc_elem_char>+))*)
+        <text_delim>
+    }
+
     token text_delim { <[']> }
 
     token text_char { ['\b'|'\q'|<-[\\\']>] }
+
+    token nc_elem_sep { '.' }
+
+    token nc_elem_char { ['\b'|'\q'|'\p'|<-[\\\'\.]>] }
 
 =head1 EXAMPLES
 
 The following are fragments of actual Concrete Muldis D code.
 
-    MuldisD:':ver<1.2.3>:auth<cpan:DUNCAND>':{ Bool:false }
+    MuldisD:'cpan:DUNCAND':'1.2.3':{ Bool:false }
 
     Bool:true
 
@@ -496,6 +512,14 @@ The following are fragments of actual Concrete Muldis D code.
         Text:'Baz',
         Text:'Baz',
     }
+
+    Cat.Name:'login_pass'
+
+    Cat.Name:'First Name'
+
+    Cat.NameChain:'glo.the_db.gene.sorted_person_name'
+
+    Cat.NameChain:'glo.the_db.stats.samples_by_order'
 
 =head1 SEE ALSO
 

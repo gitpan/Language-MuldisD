@@ -1,6 +1,93 @@
                              Language::MuldisD
 ---------------------------------------------------------------------------
 
+2007-10-09   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Language::MuldisD version 0.9.0 is released on CPAN as
+    Language-MuldisD-0.9.0.tar.gz.
+
+    * New file versions are: MuldisD.pm and Core.pod 0.9.0 and Basics.pod
+    0.8.0 and Grammar.pod 0.7.0 and PerlHosted.pod 0.4.0.  The other
+    pre-existing versioned files are unchanged.
+
+    * (MuldisD.pm, Grammar.pod, PerlHosted.pod)  Added a paragraph to the
+    DESCRIPTION of MuldisD.pm that gives the fully-qualified name of the
+    official/original (not embraced and extended) Muldis D language spec
+    that this distro represents, and gives instructions for people to
+    change at least its authority portion of the name if they release their
+    own modifications to the language spec, and instructs for Muldis D code
+    to embed the long name of the spec they are written to.  In Grammar.pod
+    and PerlHosted.pod, updated their formats for specifying the language
+    long name they conform to; in both cases, the root token or PHMD node
+    is now a simple sequence of these 4 parts: 'MuldisD', the authority
+    string, the version number, and the payload; PerlHosted.pod also gives
+    an alternative 3 parts version for up-front VM config, rather than
+    repeating it with every payload later.
+
+    * (Basics.pod)  Overhauled what kinds of Muldis D routines there are,
+    and consequences thereof; the largest updates were to the ROUTINES
+    section.  A hierarchical diagram was added to ROUTINES to group the
+    kinds by similarity.  The 3 kinds function|update_operator|procedure
+    gained inner_\w+ counterparts, which are the same but soley live within
+    and comprise the definitions of other routines, while the initial 3 are
+    now strictly not so.  All kinds of constraint routines are now pure
+    deterministic functions (that don't see globals), like just the
+    type_constraint used to be, which is fine since entire databases are
+    defined as being types or variables (so now only procedure|main can see
+    globals).  The distinct state_constraint is now gone, merged into
+    type_constraint, each of which is tied to a data type definition and
+    runs at value selection time.  Now, a transition_constraint is tied to
+    a variable and runs when it is updated, it has 2 arguments holding the
+    before|after state.  Updated ENTITY NAMES to split the 'lex' namespace
+    into itself and 'inn', the latter being used to invoke inner routines,
+    and the former being just for true lexicals.  Also updated TRANSACTIONS
+    AND CONCURRENCY.
+
+    * (Basics.pod, Core.pod)  In Core.pod, added a new SYSTEM-DEFINED CORE
+    PROCEDURES section, and its first 2 entries,
+    sys.Core.Control.(fail|try_catch), the use of which is now how you
+    generally do explicit transactions; appropriate parts of Basics.pod
+    were updated to mention/explain this.
+
+    * (Core.pod)  Renamed the operator sys.Core.Relation.not to
+    sys.Core.Relation.negation, for better symmetry with other set ops.
+
+    * (Basics.pod)  Updated the TYPE SYSTEM section to add a new main type
+    category called "remnant types", which is composed of all types that
+    don't qualify as a type of the previous 5 categories.  Generally
+    speaking, a remnant type is the declared type of each attribute of a
+    quasi-nonscalar type, when said attribute isn't one of the special
+    system-defined maximal types.  Also added the concepts of "exclusion"
+    types and "negation" types to complement the 3 existing concepts of
+    union|intersection|difference types.
+
+    * (Core.pod, Grammar.pod, PerlHosted.pod)  Renamed the catalog data
+    types 'Cat.ShortName' and 'Cat.LongName' to 'Cat.Name' and
+    'Cat.NameChain' respectively, and updated their definitions; a Cat.Name
+    must now be a non-empty string, Cat.NameChain parts must be likewise,
+    and updated the escaping rules for the latter.  In Core.pod, updated
+    their documentation, and added 2 more types 'Cat.NESeqOfName' and
+    'Cat.FlattenedNameChain' which now are part of the definition of
+    'Cat.NameChain'.  In Grammar.pod, updated the grammar concerning entity
+    names so they are treated differently than text data; also added
+    examples of both to EXAMPLES.  In PerlHosted.pod, added for the first
+    time definitions of Cat.Name and Cat.NameChain PHMD nodes, as the new
+    section CATALOG SCALAR VALUES; also, "type name" portions of older PHMD
+    nodes now can take both payload formats of Cat.NameChain nodes.  Also
+    in Core.pod, renamed any other types having 'ShortName' to remove the
+    'Short'.
+
+    * (Core.pod)  Added new catalog data type Cat.Type plus new supporting
+    types: Cat.E_TK, Cat.E_TDM, Cat.NameTypeMap, Cat.SetOfSetOfName,
+    Cat.SetOfNameChain.
+
+    * (Core.pod)  Added new data type 'Cat.Exception' which holds the
+    details of a thrown exception, but it lacks a description for now.
+
+    * (Basics.pod)  Removed the CATALOGS main section, and the "Temp Old
+    Entity Names Docs" subsection of ENTITY NAMES; these texts were very
+    out of date and will be replaced later.
+
 2007-09-23   Darren Duncan <perl@DarrenDuncan.net>
 
     * Language::MuldisD version 0.8.1 is released on CPAN as

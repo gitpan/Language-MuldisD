@@ -9,7 +9,7 @@ How to format Perl Hosted Abstract Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::PerlHosted version 0.3.1.
+This document is Language::MuldisD::PerlHosted version 0.4.0.
 
 =head1 PREFACE
 
@@ -70,20 +70,40 @@ supplying a Perl undef will result in an error.  If you genuinely want to
 represent that a value is unknown, then the C<Maybe> node type is provided
 as one way you can explicitly say so.  I<This policy may be reconsidered.>
 
-The root Perl C<Array> of a PHMD value has 3 elements, which are:
+The root Perl C<Array> of a PHMD value has 4 elements, which are:
 
 =over
 
 =item *
 
-The AST language/schema name, specifically the Perl C<Str> value
+The AST language/schema base name, specifically the Perl C<Str> value
 C<MuldisD> for this spec.
 
 =item *
 
-The AST language/schema version plus authority, encoded either as a
-single Perl C<Str> value, or as a Perl C<Array> value containing separate
-values for the language version and authority.
+The AST language/schema authority, encoded as a Perl C<Str> value.  The
+authority string is interpreted within the context of the language/schema
+name, which for the C<MuldisD> spec is the range of authority string
+formats permitted for the long names of Perl 6 packages, such as a CPAN
+identifier or an http url, although what's allowed may be open-ended.  For
+the official/original Muldis D language spec by Darren Duncan, that string
+is always C<cpan:DUNCAND> during the foreseeable future.  If someone else
+wants to I<embrace and extend> Muldis D, such as to include proprietary
+extensions, or incompatible changes, then they must use something other
+than C<cpan:DUNCAND> for the authority, (and optionally, change the name
+from C<MuldisD> as well if that seems appropriate), to prevent ambiguity.
+
+=item *
+
+The AST language/schema version number, encoded as a Perl C<Str> value.
+The version number string is interpreted within the context of both the
+language/schema name and language/schema authority, which for the
+C<MuldisD> plus C<cpan:DUNCAND> spec is the normal 3-integer-parts
+(C<X.Y.Z>) version format normal for the long names of Perl 6 packages and
+many other versioned projects in general.  At the present time, the
+official spec version number to use is shown in the VERSION and DESCRIPTION
+of the C<MuldisD.pm> file, when corresponding to the spec containing that
+file.
 
 =item *
 
@@ -93,11 +113,7 @@ The payload is any other PHMD node.
 
 Examples of a root node:
 
-    [ 'MuldisD', [ '1.2.3', 'cpan:DUNCAND' ],
-        [ 'Bool', 'md_enum', 'false' ] ]
-
-    [ 'MuldisD', ':ver<1.2.3>:auth<cpan:DUNCAND>',
-        [ 'Bool', 'md_enum', 'false' ] ]
+    [ 'MuldisD', 'cpan:DUNCAND', '1.2.3', [ 'Bool', 'md_enum', 'false' ] ]
 
 Both the payload node under the root node and every other node is a Perl
 C<Array> with usually 2+ elements, where the first element is a Perl C<Str>
@@ -107,6 +123,21 @@ give extra meta-data to specify which of possibly several representation
 formats the payload is, so that it is correctly interpreted.  Typically
 speaking, only the payload element might be a Perl collection type, and
 typically all the other elements are Perl scalars.
+
+Note that a Hosted Abstract Muldis D implementation may eschew the above
+4-element Array as the root PHMD node for all PHMD trees, and instead have
+a separate virtual machine configuration step taking just the first 3
+elements (base name, authority, version number), to provide a context for
+subsequent use of PHMD trees that consist of just what would otherwise be
+the 4th (payload) element.
+
+Examples; at VM config time:
+
+    [ 'MuldisD', 'cpan:DUNCAND', '1.2.3' ]
+
+Then later, just:
+
+    [ 'Bool', 'md_enum', 'false' ]
 
 =head1 SCALAR VALUES
 
@@ -496,7 +527,7 @@ Examples:
 
 =head2 sys.Core.Text.Text
 
-This node type represents a bit string.  It has 2 elements:
+This node type represents a character string.  It has 2 elements:
 
 =over
 
@@ -528,10 +559,10 @@ Examples:
 
 =head2 sys.Core.Text.NEText
 
-This node type represents a non-empty bit-string value; it is interpreted
-as a Muldis D C<sys.Core.Text.NEText>.  Its format is the same as for
-C<sys.Core.Text.Text> but that the node type is 'Text', and the payload may
-not be the empty string.
+This node type represents a non-empty character string value; it is
+interpreted as a Muldis D C<sys.Core.Text.NEText>.  Its format is the same
+as for C<sys.Core.Text.Text> but that the node type is 'Text', and the
+payload may not be the empty string.
 
 Examples:
 
@@ -551,7 +582,7 @@ Node type: the Perl C<Str> value C<Tuple>.
 
 =item *
 
-Type name; a Perl C<Str> value (or char-mode Perl scalar).
+Type name; any C<Array|Str> that is a valid payload for a C<Cat.NameChain>.
 
 =item *
 
@@ -616,7 +647,7 @@ Node type: the Perl C<Str> value C<Relation>.
 
 =item *
 
-Type name; a Perl C<Str> value (or char-mode Perl scalar).
+Type name; any C<Array|Str> that is a valid payload for a C<Cat.NameChain>.
 
 =item *
 
@@ -664,7 +695,7 @@ Node type: the Perl C<Str> value C<Set>.
 
 =item *
 
-Type name; a Perl C<Str> value (or char-mode Perl scalar).
+Type name; any C<Array|Str> that is a valid payload for a C<Cat.NameChain>.
 
 =item *
 
@@ -720,7 +751,7 @@ Node type: the Perl C<Str> value C<Seq>.
 
 =item *
 
-Type name; a Perl C<Str> value (or char-mode Perl scalar).
+Type name; any C<Array|Str> that is a valid payload for a C<Cat.NameChain>.
 
 =item *
 
@@ -762,7 +793,7 @@ Node type: the Perl C<Str> value C<Bag>.
 
 =item *
 
-Type name; a Perl C<Str> value (or char-mode Perl scalar).
+Type name; any C<Array|Str> that is a valid payload for a C<Cat.NameChain>.
 
 =item *
 
@@ -834,6 +865,83 @@ Examples:
         [ 'Text', 'Baz' ],
         [ 'Text', 'Baz' ],
     ] ]
+
+=head1 CATALOG SCALAR VALUES
+
+=head2 sys.Core.Cat.Name
+
+This node type represents a canonical short name for any kind of DBMS
+entity when declaring it; it is a non-empty character string type, that is
+disjoint from C<Text>.  It has 2 elements:
+
+=over
+
+=item *
+
+Node type: the Perl C<Str> value C<Cat.Name>.
+
+=item *
+
+The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.Core.Cat.Name> value by
+directly mapping the payload.  Note that, while Concrete Muldis D may
+contain a few escape sequences, those would be replaced with what they
+represent prior to making a PHMD node.  They payload must be as per a
+C<NEText> PHMD node.
+
+Examples:
+
+    [ 'Cat.Name', 'login_pass' ]
+
+    [ 'Cat.Name', 'First Name' ]
+
+=head2 sys.Core.Cat.NameChain
+
+This node type represents a canonical long name for invoking some a DBMS
+entity in some contexts; it is conceptually a sequence of entity short
+names.  It has 2 elements:
+
+=over
+
+=item *
+
+Node type: the Perl C<Str> value C<Cat.NameChain>.
+
+=item *
+
+The payload; a Perl C<Array|Seq> value or C<Str> (char-mode scalar) value.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.Core.Cat.NameChain> value as
+follows:
+
+=over
+
+=item *
+
+If the payload is an C<Array|Seq>, then it must have at least 1 element,
+and every element must be a valid payload for a C<Cat.Name> PHMD node (that
+is, any non-empty Perl character string).  Each element of the payload, in
+order, defines an element of the sequence possrep of a C<Cat.NameChain>.
+
+=item *
+
+If the payload is a C<Str>, then it must be formatted as a catenation
+(using period (C<.>) separators) of at least 1 part, where each part is
+escaped such that backslashes, single-quotes, and periods are escaped as
+C<\b>, C<\q> and C<\p> respectively.
+
+=back
+
+Examples:
+
+    [ 'Cat.NameChain', ['glo','the_db','gene','sorted_person_name'] ]
+
+    [ 'Cat.NameChain', 'glo.the_db.stats.samples_by_order' ]
 
 =head1 SEE ALSO
 
