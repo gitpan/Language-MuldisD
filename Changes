@@ -1,16 +1,77 @@
                              Language::MuldisD
 ---------------------------------------------------------------------------
 
+2007-11-08   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Language::MuldisD version 0.10.0 is released on CPAN as
+    Language-MuldisD-0.10.0.tar.gz.
+
+    * New file versions are: MuldisD.pm 0.10.0 and Core.pod 0.9.2 and
+    Basics.pod 0.9.0 and Grammar.pod 0.7.1 and PerlHosted.pod 0.4.1.  The
+    other pre-existing versioned files are unchanged.
+
+    * (MuldisD.pm)  Updated the DESCRIPTION to mention Muldis D in
+    retrospect having some designs in common with FoxPro or xBase.
+
+    * (Basics.pod)  Added a TERMINOLOGY item for "universal" to specify
+    that Muldis D does not allow sets to be members of themselves, and more
+    generally that no type or value definitions may be recursive; so
+    "universal" is only the common superset of sets that these rules allow;
+    some philosophers may say that it is possible for sets to have
+    themselves as members, so this update specifies that Muldis D does not.
+
+    * (Basics.pod)  Updated the 'main' routine kind to specify that it can
+    not see or update any global variables, which now leaves
+    '(|inner_)procedure' as the only kind that can; also that 'main' should
+    just be loading/invoking depots, where all other user-defined code is.
+
+    * (Basics.pod)  Added new RESOURCE MODULARITY AND PERSISTENCE main
+    section.  Removed the whole concept of user-defined entities being
+    allowed to exist outside of depots; now all user-defined entities must
+    exist in depots.  Also, the conceptual role of depots has been expanded
+    to cover general user code libraries, and are not mainly just for data.
+    Also, all user-defined relvars|types|invokable-routines now live in
+    packages, rather than users having the choice for them to be in or out;
+    but package members can also be public, so no actual choice is lost.
+
+    * (Basics.pod)  Updated ENTITY NAMES; removed the 'app' top namespace.
+
+    * (Basics.pod)  Updated ENTITY NAMES to add the 'imp' top level
+    namespace, which is like 'sys' in purpose but that while 'sys' is just
+    for types and routines that are defined by the standard Muldis D
+    specification, 'imp' is for other, non-standard types and routines that
+    a Muldis D implementation has added, and which are specific to that
+    implementation.  Also added is the new relcon namespace 'cat.impl',
+    which is to 'imp' what 'cat.system' is to 'sys'.  It is expected that
+    the catalog relvars under cat.(mount|foreign|interp), whose structures
+    were already expected to be implementation-specific, would likely need
+    to be defined in terms of (typically named nonscalar) data types that
+    are also implementation-specific, and so those are invokable under
+    'imp'.  Besides that main intended purpose of 'imp', a Muldis D
+    implementation that wants to embrace and extend Muldis D with further
+    types and routines intended for user data, should declare them there.
+
+    * (Basics.pod, Grammar.pod, PerlHosted.pod)  Updated ENTITY NAMES, and
+    other references, to rename the 'glo' (global) top-level entity
+    namespace to 'fed' (federation), for better accuracy; likewise, renamed
+    the 'sch' (schema) top-level namespace to 'sdp' (subdepot).
+
+    * (Basics.pod)  Fleshed out ENTITY NAMES with new documentation
+    subsections that describe the various name spaces, and interpretation.
+
+    * (Core.pod)  Added comment to Relation.Set mentioning that a set type
+    is essentially the power set of the type of its 'value' attribute.
+
 2007-10-11   Darren Duncan <perl@DarrenDuncan.net>
 
     * Language::MuldisD version 0.9.1 is released on CPAN as
     Language-MuldisD-0.9.1.tar.gz.
 
-    * New file versions are: MuldisD.pm and Core.pm 0.9.1.  The other
+    * New file versions are: MuldisD.pm and Core.pod 0.9.1.  The other
     pre-existing versioned files are unchanged.
 
-    * (Core.pm)  Each main type declaration now had its own level-2 heading
-    rather than it being a bullet-list item.
+    * (Core.pod)  Each main type declaration now had its own level-2
+    heading rather than it being a bullet-list item.
 
     * Fleshed out the tail of this Changes file with a summary pre-release
     (rel. 2007 June) history of Muldis D; going from mid-2002 to mid-2007.

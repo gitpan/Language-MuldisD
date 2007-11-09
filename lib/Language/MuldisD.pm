@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Language::MuldisD; # package
-    our $VERSION = 0.009001;
+    our $VERSION = 0.010000;
     # Note that Perl code only exists at all in this file in order to help
     # the CPAN indexer handle the distribution properly.
 } # package Language::MuldisD
@@ -29,7 +29,7 @@ Formal spec of Muldis D relational DBMS lang
 
 =head1 VERSION
 
-This document is Language::MuldisD version 0.9.1.
+This document is Language::MuldisD version 0.10.0.
 
 =head1 PREFACE
 
@@ -50,10 +50,10 @@ developers were negligent in updating it before this one, so you can yell
 at them.
 
 The fully-qualified name of this multi-part document and the language
-specification it contains is C<MuldisD:'cpan:DUNCAND':'0.9.1'>.  It is the
+specification it contains is C<MuldisD:'cpan:DUNCAND':'0.10.0'>.  It is the
 official/original (not embraced and extended) Muldis D language
 specification by the authority Darren Duncan (C<cpan:DUNCAND>), version
-C<0.9.1> (this number matches the VERSION pod in this file).  Any modified
+C<0.10.0> (this number matches the VERSION pod in this file).  Any modified
 versions of this Muldis D language specification that are released by
 someone else must have a long name with at least a different authority
 (middle) portion, to assist users and maintainers in distinguishing them
@@ -95,12 +95,8 @@ Muldis D also incorporates design aspects and constructs that are taken
 from or influenced by Perl 6, other general-purpose languages (particularly
 functional ones like Haskell), B<Tutorial D>, various B<D> implementations,
 and various SQL implementations (see the L<Language::MuldisD::SeeAlso>
-file).  I<It has also been suggested that some of the Muldis D design is
-like that of the Ada language, which I didn't really know anything about
-before writing it; this bears further investigation.  Moreover, it has also
-been suggested by a different person that the Lua language design is very
-similar, in different ways, and from a glance, it certainly seems to be
-so.>
+file).  It also appears in retrospect that Muldis D has some designs in
+common with FoxPro or xBase, and with the Ada and Lua languages.
 
 In any event, the Muldis D documentation will be focusing mainly on how
 Muldis D itself works, and will spend little time in providing rationale;
