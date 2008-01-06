@@ -1,6 +1,99 @@
                              Language::MuldisD
 ---------------------------------------------------------------------------
 
+2008-01-05   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Language::MuldisD version 0.16.0 is released on CPAN as
+    Language-MuldisD-0.16.0.tar.gz.
+
+    * This release coincides with the 5th anniversary of the first CPAN
+    release of the first Muldis D / Muldis DB progenitor; DBIx::Portable
+    version 0.01 was released on 2003 January 5th.
+
+    * New file versions are: MuldisD.pm 0.16.0 and Core.pod 0.14.0 and
+    Basics.pod 0.11.0 and Grammar.pod 0.8.0 and PerlHosted.pod 0.5.0.  The
+    other pre-existing versioned files have their version numbers all
+    incremented by 0.0.1.
+
+    * (Basics.pod, Core.pod)  Renamed the routine kinds update_operator and
+    inner_update_operator to the shorter 'updater' and 'inner_updater',
+    though the terms 'update operator' and 'updater' will continue to be
+    interchangeable.  Also renamed 6 corresponding catalog types to
+    UpdStmt, MultiUpdStmt, InnerUpdater, InnerUpdaterSet, InnerUpdaterTree,
+    Updater, and renamed any referencing attributes as appropriate.
+
+    * (Core.pod)  Reformatted all the routine signatures to look more
+    natural for Muldis D, rather than being mostly identical to the Perl 6
+    routine signature format.  The format for function declarations is now
+    "function foo result Bar params { baz(Quux) }" rather than "foo of Bar
+    (Quux $baz)", and the format for updater or procedure declarations is
+    now "updater|procedure foo update { fi(Fum) } read { baz(Quux) }"
+    rather than "foo (UPD: Fum $fi ; RO: Quux $baz)".  Note that this
+    version may not be final, and another reformat may likely come, though
+    that one would likely just consist of different keywords to replace
+    [result, params, update, read] and not other changes; feedback on this
+    is welcome.
+
+    * (Core.pod)  Removed the 3 core pseudo-types
+    sys.Core.Some.(Universal|ScaTupRel|Ordered), and added the 1 core
+    remnant type sys.Core.Remnant.ScaTupRel; the new one replaces one of
+    the removed, and the other 2 removed are now just redundant with the
+    normal Universal and Ordered types.  It seemed rather arbitrary that
+    some contexts (like routine signatures) which couldn't actually take
+    all combinations of their parameter types would in some cases have said
+    parameters documented as pseudo-types, other times as regular types.
+
+    * (Core.pod, Grammar.pod, PerlHosted.pod)  Reversing one change made
+    for release 0.9.0, a Cat.Name is once again allowed to be the empty
+    string (like 'Text', not 'NEText'), and Cat.NameChain parts likewise.
+
+    * (Core.pod, Grammar.pod, PerlHosted.pod)  Officially demoted the Order
+    type from a generic type to a catalog-specific type, since it isn't
+    really ever expected to be used in user data, but just routine
+    definitions.  It was renamed from sys.Core.Order.Order to
+    sys.Core.Cat.Order, and the definition of the type was moved from the
+    generic scalars section to the catalog scalars section; it did not get
+    further renamed to 'E_FOO' as Order is still more special than the
+    average enum type as per the enum type Bool, if nothing else than for
+    directly corresponding to a concept in multiple other programming
+    languages such as Perl 6.  In Core.pod, added new main pod section
+    SYSTEM-DEFINED CORE CATALOG FUNCTIONS and moved the Order routines
+    there, renaming each of them from Order.foo to Cat.Order_foo in the
+    process.  In Grammar.pod, renamed the 'order' token to 'cat_order' and
+    moved it next to the existing catalog types; made other appropriate
+    updates there, and updates and moves in PerlHosted.pod.
+
+    * (Core.pod)  Updated any routine signatures that specified some
+    collection-type parameters as Foo{Bar} so they spell it FooAsBar
+    instead.  Also added a few explicitly system-defined Spec.FooOfBar that
+    didn't previously exist but were referred to by said routines.
+
+    * (Core.pod)  Renamed the 3 scalar types Spec.PInt(1_4|2_(N|36)) to
+    Cat.PInt(1_4|2_(N|36)), moved to catalog types.
+
+    * (Core.pod)  Renamed (from 'Spec') or added the following 9
+    quasi-catalog incomplete types, which are used only as the declared
+    types of some system-defined N-ary relational operators; all are in the
+    new package 'sys.Core.QuasiCat': (Set|Bag)Of(Tuple|Relation), SetOfBag,
+    MaybeOfTuple, SeqOfSeq, QuasiSetOf(Tuple|Relation).  Moved to a new doc
+    section SYSTEM-DEFINED CORE QUASI-CATALOG PARAMETERIZED TYPES.
+
+    * (Core.pod)  With the above 2 groups removed from 'Spec', that package
+    is now simply for conveniently system-defined collection-of-scalar
+    types that are likely to be used in user data, and many of which are
+    the declared types of N-ary system-defined scalar operators.  Added any
+    of the following 32 subtypes that didn't previously exist:
+    sys.Core.Spec.(Set|Maybe|Seq|Bag)Of(Scalar|Ordered),
+    sys.Core.Spec.(Set|Maybe|Seq|Bag)Of(Bool|Int|UInt|Rat|Blob|Text).
+
+    * Brought the TODO file in line with recent progress, replacing the few
+    broad-scope line items with more detail-scope ones, added some
+    speculation items.
+
+    * Incremented all copyright year range-ends to 2008.
+
+    * (Core.pod)  Other minor updates.
+
 2007-12-31   Darren Duncan <perl@DarrenDuncan.net>
 
     * Language::MuldisD version 0.15.0 is released on CPAN as
@@ -24,10 +117,11 @@
     existing relation type factories (|Quasi)(Set|Seq|Bag).
 
     * (Core.pod)  Renamed Cat.(|SetOf)NameMap to Cat.(|SetOf)NameExprMap,
-    and renamed its attributes from 'key','value' to 'name','expr'.  Also
-    renamed Cat.BiDiNameMap to Cat.AttrRenameMap, and renamed its
-    attributes from 'key','value' to 'before','after'.  The latter is
-    therefore no longer a subtype of (the first of) the former.
+    and renamed its attributes from 'key','value' to 'name','expr'.  Also,
+    as a reversal of one change made for release 0.8.0, renamed
+    Cat.BiDiNameMap to Cat.AttrRenameMap, and renamed its attributes from
+    'key','value' to 'before','after'.  The latter is therefore no longer a
+    subtype of (the first of) the former.
 
     * (Core.pod)  Fleshed out the catalog types so that they can now fully
     define expression trees and functions (except where new data types are
@@ -1091,6 +1185,10 @@
     code and tests, but while a significant amount of executing code was
     produced, no solution emerged that was actually useable for real work;
     what did get produced was also unnecessarily complicated.
+
+    * The very first CPAN release of anything related to Rosetta was on
+    2003-01-05, in the form of DBIx::Portable version 0.01, as
+    DBIx-Portable-0.01.tar.gz.
 
     * A Lightning Talk was also given introducing Rosetta at OSCON 2005;
     but it is Muldis DB instead that will fulfill the promises made in it.

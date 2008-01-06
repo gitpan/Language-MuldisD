@@ -9,7 +9,7 @@ Muldis D extension for spatial data types and operators
 
 =head1 VERSION
 
-This document is Language::MuldisD::Ext::Spatial version 0.5.1.
+This document is Language::MuldisD::Ext::Spatial version 0.5.2.
 
 =head1 PREFACE
 
@@ -154,7 +154,7 @@ Darren Duncan (C<perl@DarrenDuncan.net>)
 
 This file is part of the formal specification of the Muldis D language.
 
-Muldis D is Copyright © 2002-2007, Darren Duncan.
+Muldis D is Copyright © 2002-2008, Darren Duncan.
 
 See the LICENSE AND COPYRIGHT of L<Language::MuldisD> for details.
 
