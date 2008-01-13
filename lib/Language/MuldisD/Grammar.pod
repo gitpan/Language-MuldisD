@@ -9,7 +9,7 @@ How to format Concrete Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Grammar version 0.8.0.
+This document is Language::MuldisD::Grammar version 0.9.0.
 
 =head1 PREFACE
 
@@ -45,8 +45,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     use v6-alpha;
 
-    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.8.0>;
-    grammar MuldisD-0.8.0-cpan:DUNCAND;
+    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.9.0>;
+    grammar MuldisD-0.9.0-cpan:DUNCAND;
 
     token start {
         (MuldisD)
@@ -75,17 +75,16 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         | <cat_name>
         | <cat_name_chain>
         | <cat_order>
+        | <cat_e_rm>
+        | <cat_e_tk>
+        | <cat_e_tdm>
+        | <cat_e_enk>
+        | <cat_e_psak>
     }
 
     token bool { (Bool) <spec_sep> (false|true) }
 
     token int {
-          <just_an_int>
-        | <uint>
-        | <pint>
-    }
-
-    token just_an_int {
         (Int)
         <spec_sep>
         (<[1-9A-Z]>)
@@ -93,58 +92,32 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         (0|\-?<[1-9A-Z]><[0-9A-Z]>*)
     }
 
-    token uint {
-        (UInt)
-        <spec_sep>
-        (<[1-9A-Z]>)
-        <spec_sep>
-        (0|<[1-9A-Z]><[0-9A-Z]>*)
-    }
-
-    token pint {
-        (PInt)
-        <spec_sep>
-        (<[1-9A-Z]>)
-        <spec_sep>
-        (<[1-9A-Z]><[0-9A-Z]>*)
-    }
-
     token rat {
-          <just_an_rat>
-        | <urat>
-        | <prat>
+          rat_with_radix
+        | rat_as_int_pair
     }
 
-    token just_an_rat {
+    token rat_with_radix {
         (Rat)
+        <spec_sep>
+        (radix)
         <spec_sep>
         (<[1-9A-Z]>)
         <spec_sep>
         (0|\-?<[1-9A-Z]><[0-9A-Z]>*\.?<[0-9A-Z]>*)
     }
 
-    token urat {
-        (URat)
+    token rat_as_int_pair {
+        (Rat)
+        <spec_sep>
+        (pair)
         <spec_sep>
         (<[1-9A-Z]>)
         <spec_sep>
-        (0|<[1-9A-Z]><[0-9A-Z]>*\.?<[0-9A-Z]>*)
-    }
-
-    token prat {
-        (PRat)
-        <spec_sep>
-        (<[1-9A-Z]>)
-        <spec_sep>
-        (<[1-9A-Z]><[0-9A-Z]>*\.?<[0-9A-Z]>*)
+        ((0|\-?<[1-9A-Z]><[0-9A-Z]>*)\/(<[1-9A-Z]><[0-9A-Z]>*))
     }
 
     token blob {
-          <just_a_blob>
-        | <ne_blob>
-    }
-
-    token just_a_blob {
         (Blob)
         <spec_sep>
         (<[137F]>)
@@ -152,55 +125,19 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         (<[0-9A-F]>*)
     }
 
-    token ne_blob {
-        (NEBlob)
-        <spec_sep>
-        (<[137F]>)
-        <spec_sep>
-        (<[0-9A-F]>+)
-    }
-
     token text {
-          <just_a_text>
-        | <ne_text>
-    }
-
-    token just_a_text {
         (Text)
         <spec_sep>
         <quoted_text_str>
     }
 
-    token ne_text {
-        (NEText)
-        <spec_sep>
-        <quoted_ne_text_str>
-    }
-
     token tuple {
-          <just_a_tuple>
-        | <database>
-    }
-
-    token just_a_tuple {
         (Tuple)
         <spec_sep>
         <type_name>
         <spec_sep>
         <tuple_body>
     }
-
-    token database {
-        (Database)
-        <spec_sep>
-        <type_name>
-        <spec_sep>
-        <list_open>
-            (((<relation_typed_attr>) <list_sep>)*)
-        <list_close>
-    }
-
-    token relation_typed_attr { <attr_name> <pair_sep> <relation> }
 
     token relation {
           <just_a_relation>
@@ -251,28 +188,7 @@ correctly.  Any remaining errors should be corrected as soon as possible.
     }
 
     token seq {
-          seq_indexed_values
-        | seq_ordered_values
-    }
-
-    token seq_indexed_values {
         (Seq)
-        <spec_sep>
-        (index)
-        <spec_sep>
-        <type_name>
-        <spec_sep>
-        <list_open>
-            (((<index>) <pair_sep> (<literal>) <list_sep>)*)
-        <list_close>
-    }
-
-    token index { <uint> }
-
-    token seq_ordered_values {
-        (Seq)
-        <spec_sep>
-        (order)
         <spec_sep>
         <type_name>
         <spec_sep>
@@ -298,7 +214,11 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         <list_close>
     }
 
-    token count { <pint> }
+    token count {
+        (<[1-9A-Z]>)
+        <spec_sep>
+        (<[1-9A-Z]><[0-9A-Z]>*)
+    }
 
     token bag_repeated_values {
         (Bag)
@@ -322,31 +242,11 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     token type_name { <quoted_name_chain_str> }
 
-    token cat_name {
-        (Cat.Name)
-        <spec_sep>
-        <quoted_text_str>
-    }
-
-    token cat_name_chain {
-        (Cat.NameChain)
-        <spec_sep>
-        <quoted_name_chain_str>
-    }
-
-    token cat_order { (Cat.Order) <spec_sep> (increase|same|decrease) }
-
     token spec_sep { ':' }
 
     token quoted_text_str {
         <text_delim>
             (<text_char>*)
-        <text_delim>
-    }
-
-    token quoted_ne_text_str {
-        <text_delim>
-            (<text_char>+)
         <text_delim>
     }
 
@@ -363,6 +263,52 @@ correctly.  Any remaining errors should be corrected as soon as possible.
     token nc_elem_sep { '.' }
 
     token nc_elem_char { ['\b'|'\q'|'\p'|<-[\\\'\.]>] }
+
+    token cat_name {
+        (Cat.Name)
+        <spec_sep>
+        <quoted_text_str>
+    }
+
+    token cat_name_chain {
+        (Cat.NameChain)
+        <spec_sep>
+        <quoted_name_chain_str>
+    }
+
+    token cat_order { (Cat.Order) <spec_sep> (increase|same|decrease) }
+
+    token cat_e_rm {
+        (Cat.E_RM)
+        <spec_sep>
+        (half_up|to_even|to_floor|to_ceiling|to_zero)
+    }
+
+    token cat_e_tk {
+        (Cat.E_TK)
+        <spec_sep>
+        (special|scalar|tuple|relation|quasi_tuple|quasi_relation|remnant)
+    }
+
+    token cat_e_tdm {
+        (Cat.E_TDM)
+        <spec_sep>
+        (special|root|restriction|alias
+            |union|intersection|exclusion|difference|negation)
+    }
+
+    token cat_e_enk {
+        (Cat.E_ENK)
+        <spec_sep>
+        (default|scalar|tuple|relation|quasi_tuple|quasi_relation
+            |param|upd_param|ro_param|func)
+    }
+
+    token cat_e_psak {
+        (Cat.E_PSAK)
+        <spec_sep>
+        (default|upd_param|ro_param|inner_var|outer_var)
+    }
 
 =head1 EXAMPLES
 
@@ -386,25 +332,25 @@ The following are fragments of actual Concrete Muldis D code.
 
     Int:Z:-HELLOWORLD
 
-    UInt:3:301
+    Int:3:301
 
-    PInt:B:A09B
+    Int:B:A09B
 
-    Rat:1:-1.1
+    Rat:radix:1:-1.1
 
-    Rat:9:-1.5
+    Rat:radix:9:-1.5
 
-    Rat:9:3.14159
+    Rat:radix:9:3.14159
 
-    Rat:A:0.0
+    Rat:radix:A:0.0
 
-    Rat:F:DEADBEEF.FACE
+    Rat:radix:F:DEADBEEF.FACE
 
-    Rat:Z:0.000AZE
+    Rat:radix:Z:0.000AZE
 
-    URat:6:500.001
+    Rat:pair:6:500001/1000
 
-    PRat:B:A09.B
+    Rat:pair:B:A09B/10
 
     Blob:1:00101110100010
 
@@ -412,7 +358,7 @@ The following are fragments of actual Concrete Muldis D code.
 
     Blob:F:A705E
 
-    NEBlob:7:523504376
+    Blob:7:523504376
 
     Text:'Ceres'
 
@@ -420,7 +366,7 @@ The following are fragments of actual Concrete Muldis D code.
 
     Text:''
 
-    NEText:'Perl'
+    Text:'Perl'
 
     Tuple:'sys.Core.Tuple.D0':{}
 
@@ -435,13 +381,11 @@ The following are fragments of actual Concrete Muldis D code.
         'age'  => Int:9:17,
     }
 
-    Database:'sys.Core.Tuple.D0':{}
-
-    Database:'fed.the_db.account':{
+    Tuple:'fed.the_db.account':{
         'user' => Relation:'fed.the_db.account.user_r':{ ... },
     }
 
-    Database:'fed.the_db.gene':{
+    Tuple:'fed.the_db.gene':{
         'person' => Relation:'fed.the_db.gene.person_r':{ ... },
     }
 
@@ -483,13 +427,13 @@ The following are fragments of actual Concrete Muldis D code.
         Text:'2003.07.24',
     }
 
-    Seq:index:'fed.the_db.gene.sorted_person_name':{
-        UInt:9:0 => Text:'Alphonse',
-        UInt:9:1 => Text:'Edward',
-        UInt:9:2 => Text:'Winry',
+    Seq:'fed.the_db.gene.sorted_person_name':{
+        Text:'Alphonse',
+        Text:'Edward',
+        Text:'Winry',
     }
 
-    Seq:order:'fed.the_db.stats.samples_by_order':{
+    Seq:'fed.the_db.stats.samples_by_order':{
         Int:9:57,
         Int:9:45,
         Int:9:63,
@@ -497,9 +441,9 @@ The following are fragments of actual Concrete Muldis D code.
     }
 
     Bag:count:'fed.the_db.inventory.fruit':{
-        Text:'Apple'  => PInt:9:500,
-        Text:'Orange' => PInt:9:300,
-        Text:'Banana' => PInt:9:400,
+        Text:'Apple'  => 9:500,
+        Text:'Orange' => 9:300,
+        Text:'Banana' => 9:400,
     }
 
     Bag:repeat:'fed.the_db.inventory.whatsits':{
@@ -520,6 +464,16 @@ The following are fragments of actual Concrete Muldis D code.
     Cat.NameChain:'fed.the_db.stats.samples_by_order'
 
     Cat.Order:same
+
+    Cat.E_RM:half_up
+
+    Cat.E_TK:scalar
+
+    Cat.E_TDM:alias
+
+    Cat.E_ENK:default
+
+    Cat.E_PSAK:ro_param
 
 =head1 SEE ALSO
 

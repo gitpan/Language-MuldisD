@@ -1,6 +1,62 @@
                              Language::MuldisD
 ---------------------------------------------------------------------------
 
+2008-01-12   Darren Duncan <perl@DarrenDuncan.net>
+
+    * Language::MuldisD version 0.17.0 is released on CPAN as
+    Language-MuldisD-0.17.0.tar.gz.
+
+    * New file versions are: MuldisD.pm 0.17.0 and Core.pod 0.15.0 and
+    Grammar.pod 0.9.0 and PerlHosted.pod 0.6.0.  The other pre-existing
+    versioned files are unchanged.  Added 2 new files
+    lib/Language/MuldisD/Hierarchical.pod and
+    lib/Language/MuldisD/Conventions.pod, each of which start at version
+    0.0.0.
+
+    * (Core.pod)  Updated the Cat.InnerFunc type to add a couple missing
+    attributes, result_tk and result_type.
+
+    * (Grammar.pod, PerlHosted.pod)  Removed the explicit grammar tokens or
+    PHMD node types that were specific to these 7 Muldis D types: UInt,
+    PInt, URat, PRat, NEBlob, NEText, Database.  So now just these 14 ones
+    are directly supported: Bool, Int, Rat, Blob, Text, Tuple, Relation,
+    Set, Maybe, Seq, Bag, Cat.Name, Cat.NameChain, Cat.Order.  This change
+    was made to remove unnecessary complexity from the grammar/PHMD specs;
+    now for the most part there is now only 1 distinct grammar token or
+    PHMD node type for each core Muldis D root type (so the removed are
+    covered by their remaining parents); non-root types generally only have
+    their own when they also have a syntactic short-hand to take advantage
+    of.  Any otherwise orphaned examples were updated to the parent syntax.
+    Also removed the 'index' variant of Seq from Grammar, leaving just the
+    ordered variant, which was all PerlHosted had anyway.  And updated the
+    'count' variant of Bag to do itself what it had used a PInt token/node
+    to do.
+
+    * (Grammar.pod, PerlHosted.pod)  Upgraded the specification formats for
+    rationals so that now any rational value can be directly selected, not
+    just those whose denominators are powers of 2..36; for example, you can
+    now select the rational 1/43 directly where you couldn't before.  To
+    facilitate this, there are now 2 formats you can define a rational in,
+    the previous 'N.N' format, called 'radix', and the new 'N/N' format,
+    called 'pair'; in PerlHosted, the latter is given as 2 elements, not 1.
+
+    * (Grammar.pod, PerlHosted.pod)  Added grammar tokens and PHMD node
+    types for all the not yet covered enumerated scalar catalog types:
+    Cat.E_RM, Cat.E_TK, Cat.E_TDM, Cat.E_ENK, Cat.E_PSAK.  So that fills in
+    all the remaining gaps in those files and it is now possible to either
+    directly select any Muldis D value or directly define the system
+    catalog entries of any Muldis D code that would.
+
+    * (Hierarchical.pod)  This new file has begun to outline an additional
+    official dialect of Muldis D, which is terse and intended for normal
+    use for writing code in, or writing code examples in, unlike the
+    'catalog' dialect which is damningly verbose for normal use.
+
+    * (Conventions.pod)  This new file is a style guide, and mainly starts
+    off with suggesting good ways to name entities.
+
+    * (Core.pod)  Other minor updates.
+
 2008-01-05   Darren Duncan <perl@DarrenDuncan.net>
 
     * Language::MuldisD version 0.16.0 is released on CPAN as

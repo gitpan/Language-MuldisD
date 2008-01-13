@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Language::MuldisD; # package
-    use version; our $VERSION = qv('0.16.0');
+    use version; our $VERSION = qv('0.17.0');
     # Note that Perl code only exists at all in this file in order to help
     # the CPAN indexer handle the distribution properly.
 } # package Language::MuldisD
@@ -29,7 +29,7 @@ Formal spec of Muldis D relational DBMS lang
 
 =head1 VERSION
 
-This document is Language::MuldisD version 0.16.0.
+This document is Language::MuldisD version 0.17.0.
 
 =head1 PREFACE
 
@@ -38,6 +38,7 @@ documents that comprise the remaining parts of the specification, in their
 suggested reading order (but that all follow the root), are:
 L<Language::MuldisD::Basics>, L<Language::MuldisD::Core>,
 L<Language::MuldisD::Grammar>, L<Language::MuldisD::PerlHosted>,
+L<Language::MuldisD::Hierarchical>, L<Language::MuldisD::Conventions>,
 L<Language::MuldisD::Ext::Temporal>, L<Language::MuldisD::Ext::Spatial>.
 
 =head1 DESCRIPTION
@@ -50,10 +51,10 @@ developers were negligent in updating it before this one, so you can yell
 at them.
 
 The fully-qualified name of this multi-part document and the language
-specification it contains is C<MuldisD:'cpan:DUNCAND':'0.16.0'>.  It is the
+specification it contains is C<MuldisD:'cpan:DUNCAND':'0.17.0'>.  It is the
 official/original (not embraced and extended) Muldis D language
 specification by the authority Darren Duncan (C<cpan:DUNCAND>), version
-C<0.16.0> (this number matches the VERSION pod in this file).  Any modified
+C<0.17.0> (this number matches the VERSION pod in this file).  Any modified
 versions of this Muldis D language specification that are released by
 someone else must have a long name with at least a different authority
 (middle) portion, to assist users and maintainers in distinguishing them
