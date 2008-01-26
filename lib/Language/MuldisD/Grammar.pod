@@ -9,7 +9,7 @@ How to format Concrete Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Grammar version 0.9.0.
+This document is Language::MuldisD::Grammar version 0.10.0.
 
 =head1 PREFACE
 
@@ -45,8 +45,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     use v6-alpha;
 
-    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.9.0>;
-    grammar MuldisD-0.9.0-cpan:DUNCAND;
+    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.10.0>;
+    grammar MuldisD-0.10.0-cpan:DUNCAND;
 
     token start {
         (MuldisD)
@@ -142,7 +142,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
     token relation {
           <just_a_relation>
         | <set>
-        | <maybe>
+        | <nothing>
+        | <just>
         | <seq>
         | <bag>
     }
@@ -177,13 +178,15 @@ correctly.  Any remaining errors should be corrected as soon as possible.
         <list_close>
     }
 
-    token maybe {
-        (Maybe)
+    token nothing { (Nothing) }
+
+    token just {
+        (Just)
         <spec_sep>
         <type_name>
         <spec_sep>
         <list_open>
-            (<literal>?)
+            (<literal>)
         <list_close>
     }
 
@@ -287,7 +290,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
     token cat_e_tk {
         (Cat.E_TK)
         <spec_sep>
-        (special|scalar|tuple|relation|quasi_tuple|quasi_relation|remnant)
+        (special|scalar|tuple|relation
+            |quasi_scalar|quasi_tuple|quasi_relation|remnant)
     }
 
     token cat_e_tdm {
@@ -300,7 +304,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
     token cat_e_enk {
         (Cat.E_ENK)
         <spec_sep>
-        (default|scalar|tuple|relation|quasi_tuple|quasi_relation
+        (default|scalar|tuple|relation
+            |quasi_scalar|quasi_tuple|quasi_relation
             |param|upd_param|ro_param|func)
     }
 
@@ -421,11 +426,9 @@ The following are fragments of actual Concrete Muldis D code.
         Int:9:85,
     }
 
-    Maybe:'fed.the_db.gene.person_death_date':{}
+    Nothing
 
-    Maybe:'fed.the_db.gene.person_death_date':{
-        Text:'2003.07.24',
-    }
+    Just:'fed.the_db.gene.person_death_date':{ Text:'2003.07.24' }
 
     Seq:'fed.the_db.gene.sorted_person_name':{
         Text:'Alphonse',

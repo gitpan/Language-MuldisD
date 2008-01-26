@@ -9,7 +9,7 @@ Language::MuldisD::Basics -
 
 =head1 VERSION
 
-This document is Language::MuldisD::Basics version 0.11.0.
+This document is Language::MuldisD::Basics version 0.12.0.
 
 =head1 PREFACE
 
@@ -520,17 +520,33 @@ I<T2>, and I<T2> is an I<immediate subtype> of I<T1>.  Note that the
 Muldis D type system supports multiple inheritance, so types can form a
 lattice rather than a tree.
 
-Every value has at most a single I<most specific type> (or I<MST>), which
-is cited as the general answer to the question "what is this value's type".
-The MST of a value is the data type containing that value which has no
-proper subtypes that also contain that value.  Moreover, to enforce the "at
-most a single" requirement, which keeps answering the question a simple
-affair, it is mandatory in Muldis D that when any 2 data types have values
-in common, there must exist a data type which contains only the values that
-they have in common, and hence is a subtype of both.  Note that a value
-will always implicitly assume the most specific type that exists which
-contains it, even if a selector for a less specific type was explicitly
-used to select it.
+Every value conceptually has exactly one I<most specific type> (or I<MST>),
+which is cited as the general answer to the question "what is this value's
+type".  The MST of a value is the data type containing that value which has
+no proper subtypes that also contain that value.  A value will conceptually
+always implicitly assume the most specific type that exists which contains
+it, even if a selector for a less specific type was explicitly used to
+select it (although some use of explicit C<treat> may be required in code
+to assist its compilation).  With a generic B<D> language, to enforce the
+"exactly one" requirement, which keeps answering the question a simple
+affair, it would be mandatory that when any 2 data types have values in
+common, there must exist a data type which contains only the values that
+they have in common, and hence is a subtype of both; the main intent of
+that B<D> requirement is to support polymorphism where multiple distinct
+operators that have the same name but different semantics can dispatch
+correctly based on the MST of their operands.  However, in practice, such a
+requirement would place a gratuitous large and error-prone burden on users,
+where when they want to define a new type (typically a proper subtype of
+another), they may have to define many explicit subtypes of their new type
+to account for every overlap of their useful type with pre-existing system
+or user defined types.  Moreover, Muldis D uses distinct fully-qualified
+names for all operators, so no 2 operators would exist with the same name
+but different semantics, so that user trouble would be for naught in
+practice.  Therefore, Muldis D does not enforce single MSTs for values in
+general, but it might in specific (as yet unknown) future situations where
+there is ambiguity that needs resolving.  I<To keep documentation simpler,
+any reference to most-specific-types/MSTs elsewhere will assume each value
+has just one of them.>
 
 A I<union type> is a data type that has at least 2 immediate subtypes, and
 every one of its values is also a value of an immediate subtype; that is,
@@ -555,13 +571,14 @@ root type.  All root types are mutually disjoint, so every value is a
 member of exactly one root type.  Generally speaking, root types are the
 implementational foundation over which all operators and all other types
 are built, and the declared parameter and result types of most
-system-defined operators are root types.  The 6 most important
-system-defined root types are: C<Bool>, C<Int>, C<Blob>, C<Text>, C<Tuple>,
-C<Relation>.  All user-defined root types are scalar types that are defined
-not in terms of other types except for that any components of their
-I<possreps> (possible representations) have declared types.  I<Perhaps it
-should be said that all root types are defined by this last sentence?>  A
-I<leaf type> is a data type that has no proper subtypes save for C<Empty>.
+system-defined operators are root types.  The 7 most important
+system-defined root types are: C<Bool>, C<Int>, C<Rat>, C<Blob>, C<Text>,
+C<Tuple>, C<Relation>.  All user-defined root types are scalar types that
+are defined not in terms of other types except for that any components of
+their I<possreps> (possible representations) have declared types.
+I<Perhaps it should be said that all root types are defined by this last
+sentence?>  A I<leaf type> is a data type that has no proper subtypes save
+for C<Empty>.
 
 A I<complete type> is a data type that is fully defined, and for which it
 would be possible to have values that are of just that data type, if it
@@ -576,32 +593,34 @@ they are not parameterized.
 
 =head2 Type Identification
 
-All values in the Muldis D type system are broadly categorized into 5
+All values in the Muldis D type system are broadly categorized into 6
 complementary sets called I<scalar values>, I<tuple values>, I<relation
-values>, I<quasi-tuple values>, and I<quasi-relation values>; tuple and
-relation values are collectively known as I<nonscalar values>; quasi-tuple
-and quasi-relation values are collectively known as I<quasi-nonscalar
-values>.  The type system has the system-defined data types named
-C<Scalar>, C<Tuple>, C<Relation>, C<QuasiTuple>, and C<QuasiRelation>,
-which serve as maximal data types for each category, respectively.  The 5
-types are all mutually disjoint, and C<Universal> is a union type over all
-of them.
+values>, I<quasi-scalar values>, I<quasi-tuple values>, and
+I<quasi-relation values>; tuple and relation values are collectively known
+as I<nonscalar values>; quasi-tuple and quasi-relation values are
+collectively known as I<quasi-nonscalar values>.  The type system has the
+system-defined data types named C<Scalar>, C<Tuple>, C<Relation>,
+C<QuasiScalar>, C<QuasiTuple>, and C<QuasiRelation>, which serve as maximal
+data types for each category, respectively.  The 6 types are all mutually
+disjoint, and C<Universal> is a union type over all of them.
 
 Most data types each consist exclusively of values from exactly one of the
-above 5 categories, and each such type does not include values from several
+above 6 categories, and each such type does not include values from several
 of them.  Therefore, every such data type is said to be either a I<scalar
-type>, a I<tuple type>, a I<relation type>, a I<quasi-tuple type>, or a
-I<quasi-relation type>, depending which category all of its values come
-from.  In similar fashion, a I<nonscalar type> is generally any type that
-is not a scalar type, if we ignored quasi-nonscalar types, meaning it is
-either a tuple type or a relation type.
+type>, a I<tuple type>, a I<relation type>, a I<quasi-scalar> type, a
+I<quasi-tuple type>, or a I<quasi-relation type>, depending which category
+all of its values come from.  In similar fashion, a I<nonscalar type> is
+generally any type that is not a scalar type, if we ignored quasi- types,
+meaning it is either a tuple type or a relation type.
 
 A I<remnant type> is any type having at least 2 values, where at least 2 of
 the values are not allowed to be in a same single type of one of the other
-5 categories, according to their type definition rules.  The remnant
+6 categories, according to their type definition rules.  The remnant
 category is the complement category to all the others in that every
 possible proper subset of the values of C<Universal> can now be represented
-by a type that fits in one of the 6 categories, save C<Empty> itself.
+by a type that fits in one of the 7 categories, save C<Empty> itself.  The
+type system has the system-defined data type named C<Remnant> which serves
+as a partially redundant maximal data type for remnant types.
 
 The identity of every scalar type is defined by its name alone, and every
 scalar type must have a distinct name that is explicitly defined, either by
@@ -622,10 +641,10 @@ component structure.  Any two nonscalar types that have the same component
 structure are in fact the same type, by definition, regardless of whether
 they were defined independently of each other or not.
 
-A quasi-nonscalar type is the same as a nonscalar type as far as the means
-of identifying it go (by its structure, not by its name), but that
-particular kinds of components are permitted in quasi-nonscalar types that
-aren't permitted in nonscalar types (and aren't permitted in scalar types).
+A quasi- type is the same as its similarly named non-quasi counterpart as
+far as the means of identifying it go (by name for scalar vs by its
+structure for nonscalar), but that particular kinds of components are
+permitted in quasi- types that aren't permitted in non-quasi types.
 
 A remnant type is always defined in terms of one or more other types, and
 it can never be a root type with defined components.  The identity of every
@@ -635,9 +654,10 @@ several independently defined remnant types can be considered the same one.
 
 To keep things simpler, every data type in Muldis D has a name by which it
 is referenced, even nonscalar and quasi-nonscalar types; however, the names
-of types that are not scalar types are simply convenient aliases for their
-true identities, which are their structures (the convenience allows various
-Muldis D catalog features to be designed and implemented more easily).
+of types that are not scalar or quasi-scalar types are simply convenient
+aliases for their true identities, which are their structures (the
+convenience allows various Muldis D catalog features to be designed and
+implemented more easily).
 
 =head2 Scalar Types
 
@@ -758,7 +778,34 @@ attributes in each heading have a valid subtype/supertype relationship;
 each attribute of a tuple or relation subtype is a subtype of the
 same-named attribute of the tuple or relation supertype.
 
-=head2 Quasi-Tuple Types and Quasi-Relation Types
+The most specific type (MST) of a tuple value is determined by the MSTs of
+all of its attributes' values; what the heading of that tuple says for each
+of its attributes is that its data type is the MST of the value of that
+attribute in the tuple's body.
+
+The MST of a relation value is similarly based on the attribute values in
+its member tuples; for each relation attribute, its MST is the most
+specific common supertype of the MSTs of the tuple values for that
+attribute.  If a relation value has zero tuples, then the MST of every one
+of its attributes is simply C<Empty>, regardless of whether that attribute
+would otherwise be scalar or tuple or relation valued.  A consequence of
+this is that 2 relation values with zero tuples are always identical if
+just their degree and the names of their attributes match, and regardless
+of the declared types of the attributes.  A corollary to this is that if
+the declared type of an attribute of a relation type is C<Empty>, then that
+type can only consist of exactly 1 value, which is the zero-tuple relation
+having those attribute names (and their types are all C<Empty>.  This
+quality is reserved for relation (and quasi-relation) types alone; no
+scalar possrep or tuple (or quasi- variants) may use C<Empty> as a declared
+attribute type because their attributes can't contain zero values.
+
+A consequence of these identity matters is that a Muldis D implementation
+can choose to keep all the actual type information of a nonscalar (and
+quasi-nonscalar) value's attributes in the body, leaving the heading to
+keep nothing but the names of the attributes.  An empty relation (or
+quasi-relation) body does not mean that any important meta-data is lost.
+
+=head2 Quasi- Types
 
 The union types C<Universal>, C<Tuple>, C<Relation> (and the system-defined
 subtypes of the latter 2), and remnant types, can be used as the declared
@@ -779,21 +826,30 @@ join operator, for example, since each relation being joined would probably
 have a different heading than the others.
 
 Quasi-tuple types and quasi-relation types exist as a solution to this
-problem, such that the I<quasi-heading> of one is allowed to include
-attributes whose declared types are any type at all, including the union
-types C<Universal>, C<Tuple>, C<Relation>, C<QuasiTuple>, C<QuasiRelation>,
-and subtypes of tuple and relation without specific attribute sets, and
-remnant types.
+problem (and quasi-scalar types round out the type system), such that the
+I<quasi-heading> of one is allowed to include attributes whose declared
+types are any type at all, including the union types C<Universal>,
+C<Tuple>, C<Relation>, C<QuasiScalar>, C<QuasiTuple>, C<QuasiRelation>,
+C<Remnant>, and subtypes of tuple and relation without specific attribute
+sets, and remnant types.
 
-This said, the situations in which quasi-nonscalar types may be used are
-limited; only quasi-nonscalar types may have quasi-nonscalar types as
-components; scalar and nonscalar types may not.
+This said, the situations in which quasi- types may be used are limited;
+only quasi- types may have quasi- types as components; (non-quasi) scalar
+and nonscalar types may not.
 
 Also, quasi-nonscalar types only have defined for them a subset of
 corresponding nonscalar type operators, partly because the former are not
 intended to replace the latter for the majority of use cases, and partly
 because some of them are simply impossible to implement for
-quasi-nonscalars: C<unwrap>, C<ungroup>.
+quasi-nonscalars in the general case: C<unwrap>, C<ungroup>.
+
+By some conceptions, the type system could be organized such that all
+non-quasi types are proper subtypes of their quasi- counterparts (as
+integers could be considered proper subtypes of rationals); however, these
+type groups have been made disjoint intentionally for reasons which include
+making it easier to avoid using quasi- types, which are not needed for the
+vast majority of tasks, and which are not allowed in truly relational
+databases as global/persisting variables.
 
 =head2 Remnant Types
 
@@ -843,10 +899,10 @@ attribute which is itself infinite (for example, a type that has an I<Int>
 attribute).
 
 The system-defined root type C<Bool> is finite (2 values), as is the
-C<Empty> type (zero values), while all of the other 5 most important
-system-defined root types (C<Int>, C<Blob>, C<Text>, C<Tuple>, C<Relation>)
-are infinite, as are the C<Universal>, C<Scalar>, C<QuasiTuple>,
-C<QuasiRelation> types.
+C<Empty> type (zero values), while all of the other 6 most important
+system-defined root types (C<Int>, C<Rat>, C<Blob>, C<Text>, C<Tuple>,
+C<Relation>) are infinite, as are the C<Universal>, C<Scalar>,
+C<QuasiScalar>, C<QuasiTuple>, C<QuasiRelation>, C<Remnant> types.
 
 All proper subtypes of finite types are themselves finite types.  Proper
 subtypes of infinite types can be either finite or infinite depending on

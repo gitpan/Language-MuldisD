@@ -9,7 +9,7 @@ Muldis D core data types and operators
 
 =head1 VERSION
 
-This document is Language::MuldisD::Core version 0.15.0.
+This document is Language::MuldisD::Core version 0.16.0.
 
 =head1 PREFACE
 
@@ -66,7 +66,7 @@ relationships:
                 sys.Core.Text.Text
                     sys.Core.Text.NEText
 
-        # The following are all nonscalar type factories.
+        # The following are mostly nonscalar type factories.
 
         sys.Core.Tuple.Tuple
             sys.Core.Tuple.D0
@@ -79,10 +79,17 @@ relationships:
             sys.Core.Relation.D0
             sys.Core.Relation.Set
                 sys.Core.Relation.Maybe
+                    sys.Core.Relation.Nothing
+                    sys.Core.Relation.Just
             sys.Core.Relation.Seq
             sys.Core.Relation.Bag
 
-        # The following are all quasi-nonscalar type factories.
+        # The following is filler, to group possible user-def types.
+
+        sys.Core.QuasiScalar.QuasiScalar
+            sys.Core.QuasiScalar.E_D
+
+        # The following are mostly quasi-nonscalar type factories.
 
         sys.Core.QuasiTuple.QuasiTuple
             sys.Core.QuasiTuple.D0
@@ -94,12 +101,15 @@ relationships:
             sys.Core.QuasiRelation.D0
             sys.Core.QuasiRelation.QuasiSet
                 sys.Core.QuasiRelation.QuasiMaybe
+                    sys.Core.QuasiRelation.QuasiNothing
+                    sys.Core.QuasiRelation.QuasiJust
             sys.Core.QuasiRelation.QuasiSeq
             sys.Core.QuasiRelation.QuasiBag
 
         # The following are all remnant types.
 
-        sys.Core.Remnant.ScaTupRel
+        sys.Core.Remnant.Remnant
+            sys.Core.Remnant.ScaTupRel
 
 Note that C<sys.Core.Universal.Empty> is a proper subtype of all of the
 other types in this graph, but every other type has only one immediate
@@ -477,6 +487,9 @@ document), but all other actual nonscalar data types are user-defined.
 Users can also define their own incomplete nonscalar data types that are
 tuple or relation types.
 
+As exceptions to the above 2 paragraphs, the C<Nothing> type and the 2
+C<D0> types are actually complete types, despite being listed here.
+
 =head2 sys.Core.Tuple.Tuple
 
 The C<Tuple> type is the maximal type of all Muldis D tuple (nonscalar)
@@ -558,6 +571,25 @@ close to SQL's nullable types without actually having 3-valued logic; it
 would probably be convenient for code that round-trips SQL by way of Muldis
 D to use the C<Maybe> type.  Its default value has zero tuples.
 
+=head2 sys.Core.Relation.Nothing
+
+A C<Nothing> is a proper subtype of C<Maybe> that has exactly zero
+elements; its cardinality is 1 and its only value is its default.  The
+single C<Nothing> value, which is a relation with zero tuples and a single
+attribute named C<value>, is Muldis D's answer to the SQL NULL and is
+intended to be used for the same purposes; that is, a special marker for
+missing or inapplicable information, that does not typically equal any
+normal/scalar value; however, in Muldis D, C<Nothing> I<is a value>, and it
+I<is> equal to itself.
+
+=head2 sys.Core.Relation.Just
+
+A C<Just> is a proper subtype of C<Maybe> that has exactly 1 element.  Its
+default value's only tuple's only element has the value C<Bool:false>.  The
+C<Just> type is complementary to the C<Nothing> type under C<Maybe>;
+C<Nothing> consists of exactly 1 of C<Maybe>'s values, and C<Just> consists
+of all of C<Maybe>'s other values.
+
 =head2 sys.Core.Relation.Seq
 
 A C<Seq> is a proper subtype of C<Relation> that has 2 attributes, and
@@ -581,6 +613,30 @@ operators where the order of their argument elements or result is not
 significant, but that duplicate values are significant; specifically,
 C<count> defines an explicit count of occurrences for C<value>, also known
 as that value's I<multiplicity>.  Its default value has zero tuples.
+
+=head1 SYSTEM-DEFINED CORE QUASI-SCALAR DATA TYPES
+
+There are no system-defined normal quasi-scalar types; the only reason the
+following exist is to provide a maximal type of any user-defined ones that
+may come to exist.
+
+=over
+
+=item C<sys.Core.QuasiScalar.QuasiScalar>
+
+The C<QuasiScalar> type is the maximal type of all Muldis D quasi-scalar
+types, and contains every quasi-scalar value that can possibly exist.  Its
+default value is C<QuasiScalar.E_D:default>.  The cardinality of this type
+is infinity.
+
+=item C<sys.Core.QuasiScalar.E_D>
+
+A C<QuasiScalar.E_D> is an enumeration consisting of the 1 value
+C<QuasiScalar.E_D:default>, which is also its default value.  The only
+reason it exists is to provide a default value for the QuasiScalar union
+type.  The cardinality of this type is 1.
+
+=back
 
 =head1 SYSTEM-DEFINED CORE QUASI-NONSCALAR PARAMETERIZED DATA TYPES
 
@@ -634,9 +690,21 @@ infinite.
 
 =head2 sys.Core.QuasiRelation.QuasiMaybe
 
-A C<QuasiMaybe> is a proper subtype of C<QuasiRelation> in the
-corresponding manner to C<Maybe> being a proper subtype of C<Relation>.
-Its cardinality is infinite.
+A C<QuasiMaybe> is a proper subtype of C<QuasiSet> in the corresponding
+manner to C<Maybe> being a proper subtype of C<Set>. Its cardinality is
+infinite.
+
+=head2 sys.Core.QuasiRelation.QuasiNothing
+
+A C<QuasiNothing> is a proper subtype of C<QuasiMaybe> in the corresponding
+manner to C<Nothing> being a proper subtype of C<Maybe>.  Its cardinality
+is 1.
+
+=head2 sys.Core.QuasiRelation.QuasiJust
+
+A C<QuasiJust> is a proper subtype of C<QuasiMaybe> in the corresponding
+manner to C<Just> being a proper subtype of C<Maybe>.  Its cardinality is
+infinite.
 
 =head2 sys.Core.QuasiRelation.QuasiSeq
 
@@ -656,6 +724,12 @@ These core data types are mainly for use with the definitions of some
 polymorphic operators whose range of possibly acceptable values may be
 mutually incompatible, and they aren't appropriate to group into other type
 categories or namespaces.
+
+=head2 sys.Core.Remnant.Remnant
+
+The C<Remnant> type is a partially redundant maximal type of all Muldis D
+remnant types.  Its default value is C<Bool:false> by way of its
+C<ScaTupRel> subtype.  The cardinality of this type is infinity.
 
 =head2 sys.Core.Remnant.ScaTupRel
 
@@ -764,11 +838,12 @@ commonly used method of rounding.
 
 =head2 sys.Core.Cat.E_TK
 
-A C<Cat.E_TK> (type kind) is an enumeration consisting of the 7 values
+A C<Cat.E_TK> (type kind) is an enumeration consisting of the 8 values
 C<Cat.E_TK:special> (mainly for system-defined implicit supertypes),
 C<Cat.E_TK:scalar>, C<Cat.E_TK:tuple>, C<Cat.E_TK:relation>,
-C<Cat.E_TK:quasi_tuple>, C<Cat.E_TK:quasi_relation>, C<Cat.E_TK:remnant>.
-Its default value is C<Cat.E_TK:scalar>.
+C<Cat.E_TK:quasi_scalar>, C<Cat.E_TK:quasi_tuple>,
+C<Cat.E_TK:quasi_relation>, C<Cat.E_TK:remnant>.  Its default value is
+C<Cat.E_TK:scalar>.
 
 =head2 sys.Core.Cat.E_TDM
 
@@ -788,13 +863,15 @@ default value is C<Cat.E_TDM:alias>.
 =head2 sys.Core.Cat.E_ENK
 
 A C<Cat.E_ENK> (expression node kind) is an enumeration consisting of the
-10 values C<Cat.E_ENK:default> (default value of expression's declared
-type), C<Cat.E_ENK:(scalar|tuple|relation|quasi_tuple|quasi_relation)>
-(hard-coded literal scalar|tuple|relation|quasi-tuple|quasi-relation
-value), C<Cat.E_ENK:param> (value of expression-containing function
-parameter), C<Cat.E_ENK:upd_param> (on-entry value of expression-containing
-update operator subject-to-update parameter), C<Cat.E_ENK:ro_param> (value
-of expression-containing update operator read-only parameter),
+11 values C<Cat.E_ENK:default> (default value of expression's declared
+type),
+C<Cat.E_ENK:(scalar|tuple|relation|quasi_scalar|quasi_tuple|quasi_relation)
+> (hard-coded literal
+scalar|tuple|relation|quasi-scalar|quasi-tuple|quasi-relation value),
+C<Cat.E_ENK:param> (value of expression-containing function parameter),
+C<Cat.E_ENK:upd_param> (on-entry value of expression-containing update
+operator subject-to-update parameter), C<Cat.E_ENK:ro_param> (value of
+expression-containing update operator read-only parameter),
 C<Cat.E_ENK:func> (result of function invocation, or inlining of function
 body).  Note that only C<upd_param> and C<func> (over C<upd_param>) can be
 used for a subject-to-update argument of an update operator, but all of
@@ -911,10 +988,11 @@ subtrahend type.
 Iff C<tdm> is C<Cat.E_TDM:root>, then the data type is defined
 fundamentally in terms of an explicit attribute collection, and C<attrs>
 defines the names and declared types of those attributes.  Iff additionally
-C<tk> is C<Cat.E_TK:scalar>, then C<attrs> specifically defines the
-attributes of just the core/initial/only possrep; otherwise, C<attrs>
-defines the heading of the tuple or relation etc type.  It is valid to have
-zero attributes; in this case, the type consists of exactly one value.
+C<tk> is C<Cat.E_TK:(scalar|quasi_scalar)>, then C<attrs> specifically
+defines the attributes of just the core/initial/only possrep; otherwise,
+C<attrs> defines the heading of the tuple or relation etc type.  It is
+valid to have zero attributes; in this case, the type consists of exactly
+one value.
 
 =item C<keys> - C<Cat.SetOfSetOfName>
 
@@ -968,7 +1046,7 @@ argument for a subject-to-update parameter of an update operator call; in
 that case the leaf nodes / only node of the expression must map to a
 subject-to-update parameter of the containing update operator.
 
-A C<Cat.ExprNode> has these 9 attributes:
+A C<Cat.ExprNode> has these 8 attributes:
 
 =over
 
@@ -977,15 +1055,6 @@ A C<Cat.ExprNode> has these 9 attributes:
 This is the declared name of the expression node; other Muldis D code that
 is composing this expression node into their own definitions would
 reference it with this name.
-
-=item C<tk> - C<Cat.E_TK>
-
-This is semi-redundant with C<type> (further below); it says whether the
-declared result data type of the expression node is a
-scalar|tuple|relation|etc type; it assists in static analysis of Muldis D
-code in more constrained environments where user-defined type definitions
-can't or shouldn't be looked up, that is, it allows more static analysis of
-a function in isolation of where the function would live.
 
 =item C<type> - C<Cat.NameChain>
 
@@ -1049,8 +1118,8 @@ local C<ExprNode> which defines the value.
 
 =back
 
-The default value of C<Cat.ExprNode> represents the literal scalar value
-C<Bool:false>.
+The default value of C<Cat.ExprNode> has an empty name and represents the
+literal scalar value C<Bool:false>.
 
 =head2 sys.Core.Cat.InnerFunc
 
@@ -1061,7 +1130,7 @@ plus more when it would conceptually be using anonymous inline function
 definitions (to pass to function-valued function arguments), or when it
 would conceptually have self-referencing/cyclic expressions.
 
-A C<Cat.InnerFunc> has these 7 attributes:
+A C<Cat.InnerFunc> has these 5 attributes:
 
 =over
 
@@ -1070,10 +1139,6 @@ A C<Cat.InnerFunc> has these 7 attributes:
 This is the declared name of the inner function within its parent complete
 function; other Muldis D code within said complete function would reference
 it with this name.
-
-=item C<result_tk> - C<Cat.E_TK>
-
-This is semi-redundant with C<result_type> (further below).
 
 =item C<result_type> - C<Cat.NameChain>
 
@@ -1094,21 +1159,17 @@ that this may be changed later, or the attribute simply be eliminated.>
 This is the declared parameter list of the inner function, which has 0..N
 named and typed parameters.
 
-=item C<root_expr> - C<Cat.Name>
-
-This indicates which of the expression nodes comprising this inner function
-is its root node, the result of which is the result of the inner function.
-
 =item C<expr> - C<Cat.ExprTree>
 
-This defines the entire body of the inner function, which is composed of
-a single expression tree.  This expression tree must reference all of the
-parameters that the inner function has.
+This defines the entire body of the inner function, which is composed of a
+single expression tree, whose root node's name is the empty string.  This
+expression tree must reference all of the parameters that the inner
+function has.
 
 =back
 
-The default value of C<Cat.InnerFunc> unconditionally results in the
-literal scalar value C<Bool:false>.
+The default value of C<Cat.InnerFunc> has an empty name and unconditionally
+results in the literal scalar value C<Bool:false>.
 
 =head2 sys.Core.Cat.Func
 
@@ -1116,7 +1177,7 @@ A C<Cat.Func> is a C<Tuple>.  It specifies a named C<function> routine,
 which is conceptually a non-anonymous function that is generally invokable
 by the public (unless its parent package says otherwise).
 
-A C<Cat.Func> has these 3 attributes:
+A C<Cat.Func> has these 2 attributes:
 
 =over
 
@@ -1125,17 +1186,13 @@ A C<Cat.Func> has these 3 attributes:
 This is the declared name of the function; other Muldis D code would
 reference it with this name.
 
-=item C<root_inner_func> - C<Cat.Name>
-
-This indicates which of the inner functions comprising this function
-defines its public interface / parameter list and main body.
-
 =item C<inner_funcs> - C<Cat.InnerFuncTree>
 
 This defines the entire body of the function (both its main body plus any
 conceptually expression-inlined anonymous functions), which is composed of
 one or more inner functions, plus its public interface / parameter list,
-which is defined by one of those.
+which is defined by one of those.  The inner function defining the outer
+function's main body has the empty string as its name.
 
 =back
 
@@ -1241,9 +1298,10 @@ must reference all of the parameters that the inner update operator has.
 
 =back
 
-The default value of C<Cat.InnerUpdater> has 1 subject-to-update parameter
-named C<topic> and declared type C<Bool> and will unconditionally update
-it to the value C<Bool:false>; it has zero read-only parameters.
+The default value of C<Cat.InnerUpdater> has an empty name and has 1
+subject-to-update parameter named C<topic> and declared type C<Bool> and
+will unconditionally update it to the value C<Bool:false>; it has zero
+read-only parameters.
 
 =head2 sys.Core.Cat.Updater
 
@@ -1252,7 +1310,7 @@ routine, which is conceptually a non-anonymous update operator that is
 generally invokable by the public (unless its parent package says
 otherwise).
 
-A C<Cat.Updater> has these 4 attributes:
+A C<Cat.Updater> has these 3 attributes:
 
 =over
 
@@ -1261,16 +1319,13 @@ A C<Cat.Updater> has these 4 attributes:
 This is the declared name of the update operator; other Muldis D code would
 reference it with this name.
 
-=item C<root_inner_updater> - C<Cat.Name>
-
-This indicates which of the inner update operators comprising this update
-operator defines its public interface / parameter list and main body.
-
 =item C<inner_updaters> - C<Cat.InnerUpdaterTree>
 
 This (save for C<inner_funcs>) defines the entire body of the update
 operator, which is composed of one or more inner update operators, plus its
-public interface / parameter list, which is defined by one of those.
+public interface / parameter list, which is defined by one of those.  The
+inner updater defining the outer updater's main body has the empty string
+as its name.
 
 =item C<inner_funcs> - C<Cat.InnerFuncSet>
 
@@ -1287,7 +1342,7 @@ A C<Cat.ProcStmtArg> is a C<Tuple>.  It specifies a named argument for a
 procedural routine invocation done as a procedure statement, and is
 composed into the C<Cat.ProcStmt> definition of said statement.
 
-A C<Cat.ProcStmtArg> has these 7 attributes:
+A C<Cat.ProcStmtArg> has these 6 attributes:
 
 =over
 
@@ -1295,11 +1350,6 @@ A C<Cat.ProcStmtArg> has these 7 attributes:
 
 This is the declared name of the invoked procedural routine's parameter
 (either subject-to-update or read-only) that this argument is binding to.
-
-=item C<tk> - C<Cat.E_TK>
-
-This is as per the C<tk> attribute of a C<Cat.ExprNode>, but applying to
-the declared data type of the argument.
 
 =item C<type> - C<Cat.NameChain>
 
@@ -1414,9 +1464,9 @@ parameters and lexical variables that the inner procedure has.
 
 =back
 
-The default value of C<Cat.InnerProc> is a no-op; its C<name> has the
-default value of C<Cat.Name>, it has zero parameters, zero variables, and
-zero statements.
+The default value of C<Cat.InnerProc> has an empty name and is a no-op; its
+C<name> has the default value of C<Cat.Name>, it has zero parameters, zero
+variables, and zero statements.
 
 =head2 sys.Core.Cat.Proc
 
@@ -1424,7 +1474,7 @@ A C<Cat.Proc> is a C<Tuple>.  It specifies a named C<procedure> routine,
 which is conceptually a non-anonymous procedure that is generally invokable
 by the public (unless its parent package says otherwise).
 
-A C<Cat.Proc> has these 5 attributes:
+A C<Cat.Proc> has these 4 attributes:
 
 =over
 
@@ -1433,25 +1483,21 @@ A C<Cat.Proc> has these 5 attributes:
 This is the declared name of the procedure; other Muldis D code would
 reference it with this name.
 
-=item C<root_inner_proc> - C<Cat.Name>
-
-This indicates which of the inner procedures comprising this update
-operator defines its public interface / parameter list and main body.
-
 =item C<inner_procs> - C<Cat.InnerProcTree>
 
 This (save for C<inner_updaters> and C<inner_funcs>) defines the entire
 body of the procedure, which is composed of one or more inner procedures,
 plus its public interface / parameter list, which is defined by one of
-those.
+those.  The inner procedure defining the outer procedure's main body has
+the empty string as its name.
 
-=item C<inner_updaters> - C<Cat.InnerUpdaterTree>
+=item C<inner_updaters> - C<Cat.InnerUpdaterSet>
 
-This also contributes to the body of the update operator.
+This also contributes to the body of the procedure.
 
 =item C<inner_funcs> - C<Cat.InnerFuncSet>
 
-This also contributes to the body of the update operator.
+This also contributes to the body of the procedure.
 
 =back
 
@@ -1505,7 +1551,8 @@ each of those being a unary key.  Its default value has zero tuples.
 =head2 sys.Core.Cat.ExprSet
 
 A C<Cat.ExprSet> is the same as a C<Cat.ExprTree> except that it can
-represent multiple trees rather than one; this is realized in that more
+represent multiple trees rather than one, and there is no requirement for
+any node to be named with the empty string; this is realized in that more
 than one (rather than exactly one) member may have none of its peers as a
 parent node.  It so happens then that C<Cat.ExprTree> is a proper subtype
 of C<Cat.ExprSet>.
@@ -1517,11 +1564,12 @@ C<Cat.ExprNode>; it specifies a simple tree of named expression nodes,
 which are its tuples.  It has a unary (unique) key on the C<name>
 attribute, and it must have at least 1 member tuple.  All member tuples
 must define a simple expression node tree, such that every member except
-one has one of its peers as a parent node, and no direct cycles between
-members are permitted (only indirect cycles based on function /
-inner-function invocations are allowed).  The default value of
-C<Cat.ExprTree> has one tuple that is the default value of C<Cat.ExprNode>;
-the tree represents the literal scalar value C<Bool:false>.
+one (which is the root node) has one of its peers as a parent node, and no
+direct cycles between members are permitted (only indirect cycles based on
+function / inner-function invocations are allowed); the name of the root
+node must be the empty string.  The default value of C<Cat.ExprTree> has
+one tuple that is the default value of C<Cat.ExprNode>; the tree represents
+the literal scalar value C<Bool:false>.
 
 =head2 sys.Core.Cat.InnerFuncSet
 
@@ -1536,9 +1584,10 @@ may be applicable if the complete routine is not a function.
 A C<Cat.InnerFuncTree> is a proper subtype of C<Cat.InnerFuncSet> which is
 likely to only be applicable if the complete routine is a function.  It
 must have at least 1 member tuple.  All member tuples must define a single
-invocation tree but that cycles are allowed, including that invoke what is
-conceptually the tree root (main function if applicable).  The default
-value of C<Cat.InnerFuncTree> has one tuple that is the default value of
+invocation tree but that cycles are allowed, including any cycles that
+invoke what is conceptually the tree root (main function if applicable);
+the name of the root node must be the empty string.  The default value of
+C<Cat.InnerFuncTree> has one tuple that is the default value of
 C<Cat.InnerFunc>.
 
 =head2 sys.Core.Cat.MultiUpdStmt
@@ -1564,10 +1613,11 @@ which may be applicable if the complete routine is not an update operator.
 A C<Cat.InnerUpdaterTree> is a proper subtype of C<Cat.InnerUpdaterSet>
 which is likely to only be applicable if the complete routine is a update
 operator.  It must have at least 1 member tuple.  All member tuples must
-define a single invocation tree but that cycles are allowed, including that
-invoke what is conceptually the tree root (main update operator if
-applicable).  The default value of C<Cat.InnerUpdaterTree> has one tuple
-that is the default value of C<Cat.InnerUpdater>.
+define a single invocation tree but that cycles are allowed, including any
+cycles that invoke what is conceptually the tree root (main update operator
+if applicable); the name of the root node must be the empty string.  The
+default value of C<Cat.InnerUpdaterTree> has one tuple that is the default
+value of C<Cat.InnerUpdater>.
 
 =head2 sys.Core.Cat.ProcStmtArgSet
 
@@ -1797,6 +1847,20 @@ v1(Ordered), v2(Ordered) }>
 This function results in C<Bool:true> iff C<sys.Core.Ordered.comparison>
 would result in C<Cat.Order:decrease> when given the same arguments, and
 C<Bool:false> otherwise.
+
+=item C<function sys.Core.Ordered.is_increase_or_same result Bool params {
+v1(Ordered), v2(Ordered) }>
+
+This function is exactly the same as C<sys.Core.Ordered.is_decrease> except
+that it results in the opposite boolean value when given the same
+arguments.
+
+=item C<function sys.Core.Ordered.is_decrease_or_same result Bool params {
+v1(Ordered), v2(Ordered) }>
+
+This function is exactly the same as C<sys.Core.Ordered.is_increase> except
+that it results in the opposite boolean value when given the same
+arguments.
 
 =item C<function sys.Core.Ordered.is_inside_range result Bool params {
 topic(Ordered), min(Ordered), max(Ordered), min_is_inside(Bool),
@@ -2663,6 +2727,12 @@ and a relation whose sole tuple is C<t>; that is, conceptually the result
 is C<t> inserted into C<r>.  As a trivial case, if C<t> already exists in
 C<r>, then the result is just C<r>.
 
+=item C<function sys.Core.Relation.disjoint_insertion result Relation
+params { r(Relation), t(Tuple) }>
+
+This function is exactly the same as C<sys.Core.Relation.insertion> except
+that it will fail if C<t> already exists in C<r>.
+
 =item C<function sys.Core.Relation.deletion result Relation params {
 r(Relation), t(Tuple) }>
 
@@ -3006,6 +3076,12 @@ If C<topic> has zero values, then C<union> results in the empty relation
 with the same heading, which is the per-distinct-heading identity value for
 relational union.
 
+=item C<function sys.Core.Relation.disjoint_union result Relation params {
+topic(SetOfRelation) }>
+
+This function is exactly the same as C<sys.Core.Relation.union> except that
+it will fail if any 2 input values have a tuple in common.
+
 =item C<function sys.Core.Relation.exclusion result Relation params {
 topic(BagOfRelation) }>
 
@@ -3018,7 +3094,7 @@ and its body contains every tuple that is in just an odd number of the
 input relations.  If C<topic> has zero values, then C<exclusion> results in
 the empty relation with the same heading, which is the per-distinct-heading
 identity value for relational exclusion.  Note that this operation is also
-legitimately known as I<symmetric difference>, or I<disjoint union>.
+legitimately known as I<symmetric difference>.
 
 =item C<function sys.Core.Relation.intersection result Relation params {
 topic(SetOfRelation) }>
@@ -3170,6 +3246,12 @@ This function results in a C<Set> that is the relational union of C<set>
 and a Set whose sole tuple has the sole attribute value of C<value>; that
 is, conceptually the result is C<value> inserted into C<set>.  As a trivial
 case, if C<value> already exists in C<set>, then the result is just C<set>.
+
+=item C<function sys.Core.Set.disjoint_insertion result Set params {
+set(Set), value(ScaTupRel) }>
+
+This function is exactly the same as C<sys.Core.Set.insertion> except that
+it will fail if C<value> already exists in C<set>.
 
 =item C<function sys.Core.Set.deletion result Set params { set(Set),
 value(ScaTupRel) }>
@@ -3338,8 +3420,8 @@ This function results in the catenation of C<count> instances of C<topic>.
 =item C<function sys.Core.Seq.reverse result Seq params { topic(Seq) }>
 
 This function results in its argument but that the order of its elements
-has been reversed.  For example, the input C<<{ 0=>'a', 1=>'b', 2=>'c',
-3=>'d'}>> results in C<<{ 0=>'d', 1=>'c', 2=>'b', 3=>'a' }>>.
+has been reversed.  For example, the input C<< { 0=>'a', 1=>'b', 2=>'c',
+3=>'d'} >> results in C<< { 0=>'d', 1=>'c', 2=>'b', 3=>'a' } >>.
 
 =item C<function sys.Core.Seq.is_subseq result Bool params { look_in(Seq),
 look_for(Seq) }>
