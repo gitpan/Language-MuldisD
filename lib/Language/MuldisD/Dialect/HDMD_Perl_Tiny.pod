@@ -4,12 +4,12 @@
 
 =head1 NAME
 
-Language::MuldisD::PerlHosted -
+Language::MuldisD::Dialect::HDMD_Perl_Tiny -
 How to format Perl Hosted Abstract Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::PerlHosted version 0.8.0.
+This document is Language::MuldisD::Dialect::HDMD_Perl_Tiny version 0.8.1.
 
 =head1 PREFACE
 
@@ -638,8 +638,8 @@ Examples:
 
 =head2 sys.Core.Relation.Nothing
 
-This node type represents a 'nothing' value; it is interpreted as a Muldis D
-C<sys.Core.Relation.Nothing>.  It has 1 element, which is the Perl C<Str>
+This node type represents a 'nothing' value; it is interpreted as a Muldis
+D C<sys.Core.Relation.Nothing>.  It has 1 element, which is the Perl C<Str>
 value C<Nothing>.
 
 Examples:

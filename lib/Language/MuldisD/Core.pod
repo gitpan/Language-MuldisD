@@ -9,7 +9,7 @@ Muldis D core data types and operators
 
 =head1 VERSION
 
-This document is Language::MuldisD::Core version 0.17.0.
+This document is Language::MuldisD::Core version 0.17.1.
 
 =head1 PREFACE
 
@@ -342,12 +342,12 @@ referenced.  Concrete Muldis D provides a specific syntax per type to
 select a value of one of these types, which does not look like a routine
 invocation, but rather like a scalar literal in a typical programming
 language; details of that syntax are not given here, but in
-L<Language::MuldisD::Grammar>.  Abstract Muldis D as hosted in another
-language will essentially use literals of corresponding host language
-types, whatever they use for eg booleans and integers and character
-strings, but tagged with extra meta-data if the host language is more
-weakly typed or lacks one-to-one type correspondence; see
-L<Language::MuldisD::PerlHosted> for a Perl-based example.
+L<Language::MuldisD::Dialect::PTMD_Tiny>.  Abstract Muldis D as hosted in
+another language will essentially use literals of corresponding host
+language types, whatever they use for eg booleans and integers and
+character strings, but tagged with extra meta-data if the host language is
+more weakly typed or lacks one-to-one type correspondence; see
+L<Language::MuldisD::Dialect::HDMD_Perl_Tiny> for a Perl-based example.
 
 =head2 sys.Core.Scalar.Scalar
 

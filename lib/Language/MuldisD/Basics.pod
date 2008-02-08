@@ -9,7 +9,7 @@ Language::MuldisD::Basics -
 
 =head1 VERSION
 
-This document is Language::MuldisD::Basics version 0.13.0.
+This document is Language::MuldisD::Basics version 0.13.1.
 
 =head1 PREFACE
 
@@ -459,10 +459,11 @@ system catalog), which is "data definition".
 
 See L<Language::MuldisD::Core> first for details of the Muldis D
 meta-model, which is also the grammar of Abstract Muldis D; see
-L<Language::MuldisD::Grammar> for the grammar of Concrete Muldis D; the
-latter document says how to parse Concrete Muldis D into Abstract Muldis D;
-the former document explains the meaning of both in terms of the Abstract;
-see L<Language::MuldisD::PerlHosted> for Perl Hosted Abstract Muldis D.
+L<Language::MuldisD::Dialect::PTMD_Tiny> for the grammar of Concrete Muldis
+D; the latter document says how to parse Concrete Muldis D into Abstract
+Muldis D; the former document explains the meaning of both in terms of the
+Abstract; see L<Language::MuldisD::Dialect::HDMD_Perl_Tiny> for Perl Hosted
+Abstract Muldis D.
 
 =head1 TYPE SYSTEM
 

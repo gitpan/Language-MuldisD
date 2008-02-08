@@ -4,12 +4,12 @@
 
 =head1 NAME
 
-Language::MuldisD::Grammar -
+Language::MuldisD::Dialect::PTMD_Tiny -
 How to format Concrete Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Grammar version 0.11.0.
+This document is Language::MuldisD::Dialect::PTMD_Tiny version 0.11.1.
 
 =head1 PREFACE
 
@@ -26,11 +26,11 @@ Whether or not these literals are valid is up to the I<Abstract Muldis D>
 compiler, whose input is the AST resulting from parsing I<Concrete Muldis
 D>.  This grammar primarily tests for well-formedness.
 
-See also, for example, L<Language::MuldisD::PerlHosted> for a description
-of the core Perl data structures that you would probably use instead of the
-grammar below when using a Muldis D implementation in a Perl application;
-moreover, that other document is necessary to understand the meaning of
-some parts of this Grammar document.
+See also, for example, L<Language::MuldisD::Dialect::HDMD_Perl_Tiny> for a
+description of the core Perl data structures that you would probably use
+instead of the grammar below when using a Muldis D implementation in a Perl
+application; moreover, that other document is necessary to understand the
+meaning of some parts of this PTMD_Tiny document.
 
 I<This documentation is pending.>
 
@@ -45,8 +45,8 @@ correctly.  Any remaining errors should be corrected as soon as possible.
 
     use v6-alpha;
 
-    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.11.0>;
-    grammar MuldisD-0.11.0-cpan:DUNCAND;
+    # grammar MuldisD:auth<cpan:DUNCAND>:ver<0.11.1>;
+    grammar MuldisD-0.11.1-cpan:DUNCAND;
 
     token start {
         (MuldisD)
