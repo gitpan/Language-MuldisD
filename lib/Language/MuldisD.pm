@@ -7,7 +7,7 @@ use warnings FATAL => 'all';
 ###########################################################################
 
 { package Language::MuldisD; # package
-    use version; our $VERSION = qv('0.20.0');
+    use version; our $VERSION = qv('0.21.0');
     # Note that Perl code only exists at all in this file in order to help
     # the CPAN indexer handle the distribution properly.
 } # package Language::MuldisD
@@ -29,7 +29,7 @@ Formal spec of Muldis D relational DBMS lang
 
 =head1 VERSION
 
-This document is Language::MuldisD version 0.20.0.
+This document is Language::MuldisD version 0.21.0.
 
 =head1 PREFACE
 
@@ -53,9 +53,9 @@ at them.
 
 The fully-qualified name of this multi-part document and the language
 specification it contains (as a single composition) is
-C<Muldis_D:'cpan:DUNCAND':'0.20.0'>.  It is the official/original (not
+C<Muldis_D:'cpan:DUNCAND':'0.21.0'>.  It is the official/original (not
 embraced and extended) Muldis D language specification by the authority
-Darren Duncan (C<cpan:DUNCAND>), version C<0.20.0> (this number matches the
+Darren Duncan (C<cpan:DUNCAND>), version C<0.21.0> (this number matches the
 VERSION pod in this file).  This multi-part document is named and organized
 with the expectation that many dialects, extensions, and core versions of
 it will exist over time, some of those under the original author's control,
@@ -72,10 +72,10 @@ Muldis D is a computationally / Turing complete (and industrial strength)
 high-level programming language with fully integrated database
 functionality; you can use it to define, query, and update relational
 databases.  The language's paradigm is a mixture of declarative,
-functional, imperative, and object-oriented.  It is primarily focused on
-providing reliability, consistency, portability, and ease of use and
-extension.  (Logically, speed of execution can not be declared as a Muldis
-D quality because such a quality belongs to an implementation alone;
+homoiconic, functional, imperative, and object-oriented.  It is primarily
+focused on providing reliability, consistency, portability, and ease of use
+and extension.  (Logically, speed of execution can not be declared as a
+Muldis D quality because such a quality belongs to an implementation alone;
 however, the language should lend itself to making fast implementations.)
 
 Muldis D is intended to qualify as a "B<D>" language as defined by

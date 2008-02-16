@@ -9,7 +9,7 @@ How to format Perl Hosted Data Muldis D
 
 =head1 VERSION
 
-This document is Language::MuldisD::Dialect::HDMD_Perl_Tiny version 0.9.0.
+This document is Language::MuldisD::Dialect::HDMD_Perl_Tiny version 0.10.0.
 
 =head1 PREFACE
 
@@ -764,6 +764,21 @@ Examples:
         [ 'Text', 'Baz' ],
     ] ]
 
+=head1 QUASI-NONSCALAR VALUES
+
+Every PHMD node type for a nonscalar literal has a corresponding extra PHMD
+node type for a quasi-nonscalar literal.  The corresponding extra quasi-
+node types are exactly the same in format to the non-quasi types but that
+for each one of them, the value of its first element has the Perl C<Str>
+value C<Quasi> prepended.  So PHMD nodes whose first elements each are
+[C<QuasiTuple>, C<QuasiRelation>, C<QuasiSet>, C<QuasiNothing>,
+C<QuasiSingle>, C<QuasiSeq>, C<QuasiBag>] are interpreted as Muldis D
+[C<sys.Core.QuasiTuple.QuasiTuple>,
+C<sys.Core.QuasiRelation.QuasiRelation>,
+C<sys.Core.QuasiRelation.QuasiSet>, C<sys.Core.QuasiRelation.QuasiNothing>,
+C<sys.Core.QuasiRelation.QuasiSingle>, C<sys.Core.QuasiRelation.QuasiSeq>,
+C<sys.Core.QuasiRelation.QuasiBag>] values, respectively.
+
 =head1 CATALOG SCALAR VALUES
 
 =head2 sys.Core.Cat.Name
@@ -834,6 +849,34 @@ Examples:
     [ 'Cat.NameChain', ['fed','the_db','gene','sorted_person_name'] ]
 
     [ 'Cat.NameChain', 'fed.the_db.stats.samples_by_order' ]
+
+=head2 sys.Core.Cat.Comment
+
+This node type represents the text of a Muldis D code comment; it is a
+character string type, that is disjoint from both C<Text> and C<Name>.  It
+has 2 elements:
+
+=over
+
+=item *
+
+Node type: the Perl C<Str> value C<Comment>.
+
+=item *
+
+The payload.
+
+=back
+
+This node is interpreted as a Muldis D C<sys.Core.Cat.Comment> value by
+directly mapping the payload.  Note that, while Plain Text Muldis D may
+contain a few escape sequences, those would be replaced with what they
+represent prior to making a PHMD node.  The payload must be as per the
+payload of a C<Text> PHMD node.
+
+Examples:
+
+    [ 'Comment', 'This does something.' ]
 
 =head2 sys.Core.Cat.E_RM
 

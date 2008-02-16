@@ -9,7 +9,7 @@ Muldis D core data types and operators
 
 =head1 VERSION
 
-This document is Language::MuldisD::Core version 0.17.2.
+This document is Language::MuldisD::Core version 0.18.0.
 
 =head1 PREFACE
 
@@ -135,6 +135,7 @@ more or less:
                 sys.Core.Cat.Name
                 sys.Core.Cat.NameChain
                 sys.Core.Cat.FlattenedNameChain
+                sys.Core.Cat.Comment
 
                 sys.Core.Int.Int
                     sys.Core.Int.UInt
@@ -498,10 +499,13 @@ C<Tuple> is an unordered heterogeneous collection of 0..N named attributes
 are mutually distinct, and each attribute may be of distinct types; the
 mapping of a tuple's attribute names and their declared data types is
 called the tuple's I<heading>.  Its default value is the sole value of the
-sole tuple data type that has zero attributes.  The cardinality of this
-type is equal to the product of the number of permutations drawable from
-the values of each of its attributes' declared data types; for a C<Tuple>
-subtype to be finite, all of its attribute types must be.
+sole tuple data type that has zero attributes.  The cardinality of a
+I<complete> C<Tuple> type (if it has no type constraints other than those
+of its constituent attribute types) is equal to the product of the N-ary
+multiplication where there is an input to that multiplication for each
+attribute of the tuple and the value of the input is the cardinality of the
+declared type of the attribute; for a C<Tuple> subtype to be finite, all of
+its attribute types must be.
 
 =head2 sys.Core.Tuple.D0
 
@@ -537,11 +541,13 @@ corresponding declared data types match), but that a C<Relation> data type
 still has its own corresponding heading (attribute names and declared data
 types) even when it consists of zero tuples.  Its default value is the
 zero-tuple value of the sole relation data type that has zero attributes.
-Matters of its cardinality are generally the same as for C<Tuple>.  A
-relation data type can also have (unique) keys each defined over a subset
-of its attributes, which constrain its set of values relative to there
-being no explicit keys, but having the keys won't turn an infinite relation
-type into a finite one.
+The cardinality of a I<complete> C<Relation> type (if it has no type
+constraints other than those of its constituent attribute types) is equal
+to 2 raised to the power of the cardinality of the I<complete> C<Tuple>
+type with the same heading.  A relation data type can also have (unique)
+keys each defined over a subset of its attributes, which constrain its set
+of values relative to there being no explicit keys, but having the keys
+won't turn an infinite relation type into a finite one.
 
 =head2 sys.Core.Relation.D0
 
@@ -556,9 +562,9 @@ name is C<value>; it can be of any declared type.  A C<Set> subtype is
 normally used by any system-defined N-ary operators where the order of
 their argument elements or result is not significant, and that duplicate
 values are not significant.  Its default value has zero tuples.  Note that,
-for any given I<complete> Set subtype, C<Foo>, where its C<value> attribute
-has a declared type of C<Bar>, the type C<Foo> can be considered the
-I<power set> of the type C<Bar>.
+for any given I<complete> C<Set> subtype, C<Foo>, where its C<value>
+attribute has a declared type of C<Bar>, the type C<Foo> can be considered
+the I<power set> of the type C<Bar>.
 
 =head2 sys.Core.Relation.Maybe
 
@@ -751,9 +757,9 @@ Muldis D expressions; 'directly' meaning not by way of explicitly invoking
 a selector function.  Generally speaking, this union type includes all of
 the core scalar types that aren't themselves defined as union types.  The
 full list that C<ScalarLiteral> unions is: C<Bool>, C<Int>, C<Rat>,
-C<Blob>, C<Text>, C<Cat.Name>, C<Cat.NameChain>, C<Cat.E_RM>, C<Cat.E_TK>,
-C<Cat.E_TDM>, C<Cat.E_ENK>, C<Cat.E_PSAK>.  Its default value is
-C<Bool:false>.
+C<Blob>, C<Text>, C<Cat.Name>, C<Cat.NameChain>, C<Cat.Comment>,
+C<Cat.E_RM>, C<Cat.E_TK>, C<Cat.E_TDM>, C<Cat.E_ENK>, C<Cat.E_PSAK>.  Its
+default value is C<Bool:false>.
 
 =head2 sys.Core.Cat.Name
 
@@ -784,6 +790,17 @@ periods are escaped as C<\b>, C<\q> and C<\p> respectively.
 The C<Cat.FlattenedNameChain> type is used as the definition of the
 character string possrep of a C<Cat.NameChain> (see that type for details);
 while being a character string like C<Cat.Name>, the two are disjoint.
+
+=head2 sys.Core.Cat.Comment
+
+A C<Cat.Comment> is the text of a Muldis D code comment, which programmers
+can populate as an attribute of several catalog data types, such as whole
+routines or statements or expression nodes.  C<Cat.Comment> is the same as
+C<Text>, and C<Name>, in all ways but that it is specifically intended for
+use in commenting Muldis D code rather than being normal data; they are
+disjoint.  One main intended use of this type is to help preserve comments
+in code translated to or from other languages; though only a subset of
+those (FoxPro?) keep comments in the AST rather than discarding them.
 
 =head2 sys.Core.Cat.PInt1_4
 
@@ -925,7 +942,7 @@ both system and user types (just the interfaces in the former case).
 
 I<TODO:  The catalog types for type definitions need an overhaul.>
 
-A C<Cat.Type> has these 7 attributes:
+A C<Cat.Type> has these 8 attributes:
 
 =over
 
@@ -1012,6 +1029,10 @@ the data type is defined as an explicit subtype of another type by way of
 an explicit further type constraint applied to it, and C<constraint>
 defines/names that further constraint.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the data type.
+
 =back
 
 The default value of C<Cat.Type> is an alias of C<Empty>.
@@ -1035,7 +1056,7 @@ argument for a subject-to-update parameter of an update operator call; in
 that case the leaf nodes / only node of the expression must map to a
 subject-to-update parameter of the containing update operator.
 
-A C<Cat.ExprNode> has these 8 attributes:
+A C<Cat.ExprNode> has these 9 attributes:
 
 =over
 
@@ -1055,7 +1076,7 @@ expression can sometimes be inferred from context, such as from the result
 type of a function it is an invocation of, this redundancy helps make
 static analysis of Muldis D code easier, so it is easier to validate and
 optimize in isolation from the other routines it interacts with.  Moreover,
-this type declaration provides a terse way to use the C<treat> function
+this type declaration provides a terse way to use the C<treated> function
 frequently in code, so that the programmer and compiler knows that some
 generic routines are actually supposed to be resulting in a subtype of
 their normal result types.
@@ -1105,6 +1126,11 @@ invocation.  Each element defines one argument value, with the element
 C<name> matching the parameter name, and the element C<expr> naming another
 local C<ExprNode> which defines the value.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about either the expression node or
+the expression node (sub-)tree it is the root of.
+
 =back
 
 The default value of C<Cat.ExprNode> has an empty name and represents the
@@ -1119,7 +1145,7 @@ plus more when it would conceptually be using anonymous inline function
 definitions (to pass to function-valued function arguments), or when it
 would conceptually have self-referencing/cyclic expressions.
 
-A C<Cat.InnerFunc> has these 5 attributes:
+A C<Cat.InnerFunc> has these 6 attributes:
 
 =over
 
@@ -1155,6 +1181,10 @@ single expression tree, whose root node's name is the empty string.  This
 expression tree must reference all of the parameters that the inner
 function has.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the inner function as a whole.
+
 =back
 
 The default value of C<Cat.InnerFunc> has an empty name and unconditionally
@@ -1166,7 +1196,7 @@ A C<Cat.Func> is a C<Tuple>.  It specifies a named C<function> routine,
 which is conceptually a non-anonymous function that is generally invokable
 by the public (unless its parent package says otherwise).
 
-A C<Cat.Func> has these 2 attributes:
+A C<Cat.Func> has these 3 attributes:
 
 =over
 
@@ -1182,6 +1212,10 @@ conceptually expression-inlined anonymous functions), which is composed of
 one or more inner functions, plus its public interface / parameter list,
 which is defined by one of those.  The inner function defining the outer
 function's main body has the empty string as its name.
+
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the function as a whole.
 
 =back
 
@@ -1204,7 +1238,7 @@ conceptually include them, those portions of the procedures need to be
 separated out and encapsulated by named update operators or
 inner-update-operators.
 
-A C<Cat.UpdStmt> has these 3 attributes:
+A C<Cat.UpdStmt> has these 4 attributes:
 
 =over
 
@@ -1232,6 +1266,11 @@ Each element defines one argument value, with the element C<name> matching
 the parameter name, and the element C<expr> naming a local C<ExprNode>
 which defines the value.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the update statement as a
+whole.
+
 =back
 
 The default value of C<Cat.UpdStmt> will unconditionally update 1
@@ -1245,7 +1284,7 @@ procedural routine; a complete update operator consists of at least one
 inner update operator, which is its main body, likely plus more when it
 would conceptually be code refactored.
 
-A C<Cat.InnerUpdater> has these 6 attributes:
+A C<Cat.InnerUpdater> has these 7 attributes:
 
 =over
 
@@ -1285,6 +1324,10 @@ This defines the entire body of the inner update operator, which is
 composed of a single multi-update statement.  This multi-update statement
 must reference all of the parameters that the inner update operator has.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the inner updater as a whole.
+
 =back
 
 The default value of C<Cat.InnerUpdater> has an empty name and has 1
@@ -1299,7 +1342,7 @@ routine, which is conceptually a non-anonymous update operator that is
 generally invokable by the public (unless its parent package says
 otherwise).
 
-A C<Cat.Updater> has these 3 attributes:
+A C<Cat.Updater> has these 4 attributes:
 
 =over
 
@@ -1320,6 +1363,10 @@ as its name.
 
 This also contributes to the body of the update operator.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the updater as a whole.
+
 =back
 
 The default value of C<Cat.Updater> is as per the default of
@@ -1331,7 +1378,7 @@ A C<Cat.ProcStmtArg> is a C<Tuple>.  It specifies a named argument for a
 procedural routine invocation done as a procedure statement, and is
 composed into the C<Cat.ProcStmt> definition of said statement.
 
-A C<Cat.ProcStmtArg> has these 6 attributes:
+A C<Cat.ProcStmtArg> has these 7 attributes:
 
 =over
 
@@ -1367,6 +1414,10 @@ value of a lexical variable that isn't a parameter.
 Iff C<kind> is C<Cat.E_PSAK:outer_var>, then the argument is the current
 value of a non-lexical variable.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the statement argument.
+
 =back
 
 The default value of C<Cat.ProcStmtArg> will bind to a read-only parameter
@@ -1379,7 +1430,7 @@ A C<Cat.ProcStmt> is a C<Tuple>.  It specifies a generic statement from
 which non-implicitly-atomic procedural Muldis D code is composed.  Only
 procedures (or inner procedures) may contain C<Cat.ProcStmt>.
 
-A C<Cat.ProcStmt> has these 3 attributes:
+A C<Cat.ProcStmt> has these 4 attributes:
 
 =over
 
@@ -1400,6 +1451,10 @@ These are the 0..N read-only arguments to the routine invocation.  There is
 a distributed (unique) key over the C<name> attributes of C<upd_params> and
 C<ro_params>.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the statement as a whole.
+
 =back
 
 The default value of C<Cat.ProcStmt> will invoke
@@ -1413,7 +1468,7 @@ routine, which is the main component type of a complete procedure; a
 complete procedure consists of at least one inner procedure, which is its
 main body, likely plus more when it would conceptually be code refactored.
 
-A C<Cat.InnerProc> has these 6 attributes:
+A C<Cat.InnerProc> has these 7 attributes:
 
 =over
 
@@ -1451,6 +1506,11 @@ This defines the entire main body of the inner procedure, which is composed
 of 0..N procedure statements.  These statements must reference all of the
 parameters and lexical variables that the inner procedure has.
 
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the inner procedure as a
+whole.
+
 =back
 
 The default value of C<Cat.InnerProc> has an empty name and is a no-op; its
@@ -1463,7 +1523,7 @@ A C<Cat.Proc> is a C<Tuple>.  It specifies a named C<procedure> routine,
 which is conceptually a non-anonymous procedure that is generally invokable
 by the public (unless its parent package says otherwise).
 
-A C<Cat.Proc> has these 4 attributes:
+A C<Cat.Proc> has these 5 attributes:
 
 =over
 
@@ -1487,6 +1547,10 @@ This also contributes to the body of the procedure.
 =item C<inner_funcs> - C<Cat.InnerFuncSet>
 
 This also contributes to the body of the procedure.
+
+=item C<comment> - C<Cat.Comment>
+
+This is an optional programmer comment about the procedure as a whole.
 
 =back
 
@@ -1749,30 +1813,30 @@ except that it results in the opposite boolean value when given the same
 arguments.
 
 =item C<function sys.Core.Universal.is_value_of_type result Bool params {
-type(Cat.NameChain), v(Universal) }>
+topic(Universal), type(Cat.NameChain) }>
 
-This function results in C<Bool:true> iff the value of its C<v> argument is
-a member of the data type whose name is given in the C<type> argument, and
-C<Bool:false> otherwise.  As trivial cases, this function always results in
-C<Bool:true> if the named type is C<Universal>, and C<Bool:false> if it is
-C<Empty>.  This function will fail if the named type doesn't exist in the
-virtual machine.
+This function results in C<Bool:true> iff the value of its C<topic>
+argument is a member of the data type whose name is given in the C<type>
+argument, and C<Bool:false> otherwise.  As trivial cases, this function
+always results in C<Bool:true> if the named type is C<Universal>, and
+C<Bool:false> if it is C<Empty>.  This function will fail if the named type
+doesn't exist in the virtual machine.
 
-=item C<function sys.Core.Universal.treat result Universal params {
-as(Cat.NameChain), v(Universal) }>
+=item C<function sys.Core.Universal.treated result Universal params {
+topic(Universal), as(Cat.NameChain) }>
 
-This function results in the value of its C<v> argument, but that the
+This function results in the value of its C<topic> argument, but that the
 declared type of the result is the not-C<Empty> data type whose name is
 given in the C<as> argument.  This function will fail if the named type
-doesn't exist in the virtual machine, or if C<v> isn't a member of the
-named type.  The purpose of C<treat> is to permit taking values from a
+doesn't exist in the virtual machine, or if C<topic> isn't a member of the
+named type.  The purpose of C<treated> is to permit taking values from a
 context having a more generic declared type, and using them in a context
 having a more specific declared type; such an action would otherwise be
-blocked at compile time due to a type-mismatch error; C<treat> causes the
+blocked at compile time due to a type-mismatch error; C<treated> causes the
 type-mismatch validation, and possible failure, to happen at runtime
 instead, on the actual value rather than declared value.  For example, if
 you are storing an C<Int> value in a C<Scalar>-typed variable, using
-C<treat> will cause the compiler to let you use that variable as an
+C<treated> will cause the compiler to let you use that variable as an
 argument to C<Int.sum>, which it otherwise wouldn't.
 
 =item C<function sys.Core.Universal.default result Universal params {
@@ -2535,6 +2599,32 @@ by C<value>.  This function will fail if C<name> specifies an attribute
 name that C<topic> doesn't have, or if the declared type of C<value> isn't
 a subtype of the declared type of the attribute.
 
+=item C<function sys.Core.Tuple.multi_update result Tuple params {
+topic(Tuple), attrs(Tuple) }>
+
+This function is like C<sys.Core.Tuple.update_attr> except that it handles
+N tuple attributes at once rather than just 1.  The heading of the C<attrs>
+argument must be a subset of the heading of the C<topic> argument; this
+function's result is C<topic> with all the attribute values of C<attrs>
+substituted into it.  This function could alternately be named
+I<sys.Core.Tuple.static_substitution>.
+
+=item C<function sys.Core.Tuple.substitution_in_default result Tuple params
+{ of(Cat.NameChain), subst(Tuple) }>
+
+This function results in the tuple value that is the default value of the
+tuple data type whose name is given in the C<of> argument, but that zero or
+more of its attribute values have been substituted by values given in the
+C<subst> argument.  This function is a short-hand for
+C<sys.Core.Tuple.multi_update> on the result of
+C<sys.Core.Universal.default>.  This function will fail if either
+C<default> would fail for the same C<of> argument, or if its result isn't a
+tuple type, or if the heading of C<subst> isn't a subset of the heading of
+the default.  The purpose of this function is to support greater brevity in
+Muldis D coding such that users can define just part of a desired tuple
+value and have the remainder filled in from defaults for them; particularly
+useful with tuples that conceptually have some optional attributes.
+
 =item C<function sys.Core.Tuple.rename result Tuple params { topic(Tuple),
 map(Cat.AttrRenameMap) }>
 
@@ -2773,10 +2863,17 @@ operates on and results in a C<Relation> rather than a C<Tuple>, where each
 of its member tuples was transformed as per C<sys.Core.Tuple.cmpl_wrap>.
 
 =item C<function sys.Core.Relation.unwrap result Relation params {
-topic(Relation), outer(Cat.Name) }>
+topic(Relation), outer(Cat.Name), inner(Cat.SetOfName) }>
 
 This function is the inverse of C<sys.Core.Relation.wrap> as
-C<sys.Core.Tuple.unwrap> is to C<sys.Core.Tuple.wrap>.
+C<sys.Core.Tuple.unwrap> is to C<sys.Core.Tuple.wrap>.  But unlike the
+C<Tuple> variant of C<unwrap>, this current function requires the extra
+C<inner> argument to prevent ambiguity in the general case where C<topic>
+might have zero tuples, because in that situation the most-specific-type of
+C<topic{outer}> would be C<Empty>, and the names of the attributes to add
+to C<topic> in place of C<topic{outer}> are not known.  This function will
+fail if C<topic> has at least 1 tuple and C<inner> does not match the names
+of the attributes of C<topic{outer}>.
 
 =item C<function sys.Core.Relation.group result Relation params {
 topic(Relation), inner(Cat.SetOfName), outer(Cat.Name) }>
@@ -2813,7 +2910,7 @@ This function is the same as C<group> but that it groups the complementary
 subset of attributes of C<topic> to those specified by C<group_per>.
 
 =item C<function sys.Core.Relation.ungroup result Relation params {
-topic(Relation), outer(Cat.Name) }>
+topic(Relation), outer(Cat.Name), inner(Cat.SetOfName) }>
 
 This function is the inverse of C<sys.Core.Relation.group> as
 C<sys.Core.Relation.unwrap> is to C<sys.Core.Relation.wrap>; it will
@@ -2881,17 +2978,17 @@ trivial case, if C<func> is defined to unconditionally result in
 C<Bool:true>, then this function results simply in C<topic>; or, for an
 unconditional C<Bool:false>, this function results in the empty relation
 with the same heading.  Note that this operation is also legitimately known
-as I<where>.  Note that C<sys.Core.Relation.semijoin> is recommended for
-use instead of C<sys.Core.Relation.restriction> to implement some common
-kinds of relational restrictions (those composed simply of anded or ored
-tests for attribute value equality), due to the former's greater
-simplicity.
+as I<where>.  See also the C<sys.Core.Relation.semijoin> function, which is
+a simpler-syntax alternative for C<sys.Core.Relation.restriction> in its
+typical usage where restrictions are composed simply of anded or ored tests
+for attribute value equality.
 
 =item C<function sys.Core.Relation.cmpl_restriction result Relation params
 { topic(Relation), func(Cat.NameChain), assuming(Tuple) }>
 
 This function is the same as C<restriction> but that it results in the
 complementary subset of tuples of C<topic> when given the same arguments.
+See also the C<sys.Core.Relation.semidifference> function.
 
 =item C<function sys.Core.Relation.extension result Relation params {
 topic(Relation), func(Cat.NameChain), assuming(Tuple) }>
@@ -2906,9 +3003,19 @@ determined as follows; for each C<topic> tuple, the function named by
 C<func> results in a second tuple when passed the first tuple as its
 C<topic> argument and C<assuming> as its C<assuming> argument; the first
 and second tuples must have no attribute names in common, and the result
-tuple is derived by joining the tuples together.  As a trivial case, if
-C<func> is defined to unconditionally result in the degree-zero tuple, then
-this function results simply in C<topic>.
+tuple is derived by joining (cross-product) the tuples together.  As a
+trivial case, if C<func> is defined to unconditionally result in the
+degree-zero tuple, then this function results simply in C<topic>.
+
+=item C<function sys.Core.Relation.static_extension result Relation params
+{ topic(Relation), attrs(Tuple) }>
+
+This function is a simpler-syntax alternative to both
+C<sys.Core.Relation.extension> and C<sys.Core.Relation.product> in the
+typical scenario of extending a relation, given in the C<topic> argument,
+such that every tuple has mutually identical values for each of the new
+attributes; the new attribute names and common values are given in the
+C<attrs> argument.
 
 =item C<function sys.Core.Relation.substitution result Relation params {
 topic(Relation), func(Cat.NameChain), assuming(Tuple) }>
@@ -2927,6 +3034,15 @@ tuple as its own C<topic> argument, then this function results simply in
 C<topic>; or, if C<func> is defined to have a static result and it replaces
 all attributes, then this function's result will have just 0..1 tuples.
 
+=item C<function sys.Core.Relation.static_substitution result Relation
+params { topic(Relation), attrs(Tuple) }>
+
+This function is a simpler-syntax alternative to
+C<sys.Core.Relation.substitution> in the typical scenario where every tuple
+of a relation, given in the C<topic> argument, is updated with identical
+values for the same attributes; the new attribute values are given in the
+C<attrs> argument.
+
 =item C<function sys.Core.Relation.substitution_in_restriction result
 Relation params { topic(Relation), restr_func(Cat.NameChain),
 restr_assuming(Tuple), subst_func(Cat.NameChain), subst_assuming(Tuple) }>
@@ -2937,8 +3053,19 @@ short-hand for first separating the tuples of C<topic> into 2 groups where
 those passed by a relational restriction (defined by C<restr_func> and
 C<restr_assuming>) are then transformed (defined by C<subst_func> and
 C<subst_assuming>), then the result of the substitution is unioned with the
-un-transformed group.  Note that the C<substitution_in_semijoin> function
-is recommended to be used instead for many common substitutions.
+un-transformed group.  See also the C<substitution_in_semijoin> function,
+which is a simpler-syntax alternative for C<substitution_in_restriction> in
+its typical usage where restrictions are composed simply of anded or ored
+tests for attribute value equality.
+
+=item C<function sys.Core.Relation.static_substitution_in_restriction
+result Relation params { topic(Relation), restr_func(Cat.NameChain),
+restr_assuming(Tuple), subst(Tuple) }>
+
+This function is to C<sys.Core.Relation.substitution_in_restriction> what
+C<sys.Core.Relation.static_substitution> is to
+C<sys.Core.Relation.substitution>.  See also the
+C<static_substitution_in_semijoin> function.
 
 =item C<function sys.Core.Relation.map result Relation params {
 topic(Relation), func(Cat.NameChain), assuming(Tuple) }>
@@ -3178,6 +3305,13 @@ of the tuples of C<topic> to be transformed is determined by those matched
 by a semijoin with C<restr> rather than those that pass a generic
 relational restriction.
 
+=item C<function sys.Core.Relation.static_substitution_in_semijoin result
+Relation params { topic(Relation), restr(Relation), subst(Tuple) }>
+
+This function is to C<sys.Core.Relation.substitution_in_semijoin> what
+C<sys.Core.Relation.static_substitution> is to
+C<sys.Core.Relation.substitution>.
+
 =item C<function sys.Core.Relation.join_with_group result Relation params {
 primary(Relation), secondary(Relation), group_attr(Cat.Name) }>
 
@@ -3232,7 +3366,8 @@ C<secondary>'s attributes that aren't in common with C<primary>, and whose
 body is the literal values to use for those missing attribute values.  This
 function gets its name in that conceptually the result tuples from
 non-matches are the result of performing a relational cross-product between
-the un-matched C<primary> tuples and the single C<filler> tuple.
+the un-matched C<primary> tuples and the single C<filler> tuple.  This
+function could alternately be named I<outer_join_with_static_extension>.
 
 =item C<function sys.Core.Relation.outer_join_with_extension result
 Relation params { primary(Relation), secondary(Relation),
